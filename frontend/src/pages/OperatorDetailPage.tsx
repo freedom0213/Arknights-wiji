@@ -1,6 +1,6 @@
 import { useParams, Link } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
-import { fetchOperator, fetchOperatorMaterials } from '../api/client'
+import { fetchOperator } from '../api/client'
 
 const PROF_MAP: Record<string, string> = {
   WARRIOR: '近卫', SNIPER: '狙击', MEDIC: '医疗', TANK: '重装',
@@ -15,11 +15,6 @@ export default function OperatorDetailPage() {
   const { data: op, isLoading } = useQuery({
     queryKey: ['operator', id],
     queryFn: () => fetchOperator(id!),
-    enabled: !!id,
-  })
-  const { data: materials } = useQuery({
-    queryKey: ['operator-materials', id],
-    queryFn: () => fetchOperatorMaterials(id!),
     enabled: !!id,
   })
 

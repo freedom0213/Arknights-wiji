@@ -9,9 +9,9 @@ venv/
 node_modules/
 dist/
 
-# Data (数据库 + 游戏数据仓库)
-data/arknights.db
-data/arknights.db-*
+# Data (游戏数据仓库，数据库随代码部署)
+data/arknights.db-shm
+data/arknights.db-wal
 data/GameData/
 data/temp_repo/
 data/downloads/

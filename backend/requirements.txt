@@ -1,0 +1,8 @@
+# Arknights Wiji - 后端依赖
+# FastAPI: 现代化 Python Web 框架，自动生成 API 文档
+# Uvicorn: ASGI 服务器，运行 FastAPI 应用
+# SQLAlchemy: ORM 框架，用 Python 对象操作数据库
+
+fastapi>=0.115.0
+uvicorn[standard]>=0.32.0
+sqlalchemy>=2.0.0

@@ -1,0 +1,26 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+venv/
+.venv/
+
+# Node
+node_modules/
+dist/
+
+# Data (数据库 + 游戏数据仓库)
+data/arknights.db
+data/arknights.db-*
+data/GameData/
+data/temp_repo/
+data/downloads/
+data/extracted/
+
+# IDE
+.idea/
+.vscode/
+
+# OS
+.DS_Store
+Thumbs.db

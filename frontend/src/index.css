@@ -1,0 +1,26 @@
+@import "tailwindcss";
+
+/* 明日方舟风格暗色主题 */
+:root {
+  --bg-primary: #0a0a0f;
+  --bg-secondary: #12121a;
+  --bg-card: #1a1a2e;
+  --border-color: #2a2a4a;
+  --text-primary: #e8e8f0;
+  --text-secondary: #9090b0;
+  --accent: #4ec9f0;
+  --accent-gold: #f0c060;
+  --danger: #e05050;
+  --success: #50c878;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  font-family: 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  min-height: 100vh;
+}
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: var(--bg-secondary); }
+::-webkit-scrollbar-thumb { background: var(--border-color); border-radius: 3px; }

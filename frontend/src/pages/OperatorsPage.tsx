@@ -116,7 +116,7 @@ export default function OperatorsPage() {
       {/* 干员网格 */}
       {!loading && !error && operators.length > 0 && (
         <div className="grid gap-2" style={{
-          gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))',
+          gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
           justifyContent: 'center',
         }}>
           {operators.map(op => (

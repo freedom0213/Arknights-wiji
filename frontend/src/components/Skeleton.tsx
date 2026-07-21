@@ -23,7 +23,7 @@ export function SkeletonText({ lines = 3, gap = '8px' }: { lines?: number; gap?:
 }
 
 // 卡片网格骨架（干员/敌人/关卡列表）
-export function SkeletonCardGrid({ count = 12, columns = 'repeat(auto-fill, minmax(200px, 1fr))' }: {
+export function SkeletonCardGrid({ count = 12, columns = 'repeat(auto-fit, minmax(200px, 1fr))' }: {
   count?: number; columns?: string
 }) {
   return (

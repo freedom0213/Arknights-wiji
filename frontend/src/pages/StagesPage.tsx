@@ -168,7 +168,7 @@ export default function StagesPage() {
                 {groupStages(activeDay.stages).length === 0 ? (
                   <p style={{ color: 'var(--text-secondary)', fontSize: '14px' }}>该日无资源关卡开放</p>
                 ) : (
-                  <div className="grid gap-4" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))' }}>
+                  <div className="grid gap-4" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))' }}>
                     {groupStages(activeDay.stages).map(g => {
                       const apVals = g.stages.map(s => s.apCost ?? 0).filter(v => v > 0)
                       return (
@@ -246,7 +246,7 @@ export default function StagesPage() {
 
           {/* 关卡列表 */}
           {loading ? (
-            <SkeletonCardGrid count={8} columns="repeat(auto-fill, minmax(300px, 1fr))" />
+            <SkeletonCardGrid count={8} columns="repeat(auto-fit, minmax(300px, 1fr))" />
           ) : error ? (
             <ErrorState message={error} onRetry={loadStages} />
           ) : stages.length === 0 ? (
@@ -254,7 +254,7 @@ export default function StagesPage() {
               {search ? `未找到匹配 "${search}" 的关卡` : '暂无关卡数据'}
             </p>
           ) : (
-            <div className="grid gap-2" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))' }}>
+            <div className="grid gap-2" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))' }}>
               {stages.map(stage => (
                 <div key={stage.id} style={{
                   background: 'var(--bg-secondary)', border: '1px solid var(--border-color)',

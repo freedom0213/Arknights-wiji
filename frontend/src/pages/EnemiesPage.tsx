@@ -98,7 +98,7 @@ export default function EnemiesPage() {
       {/* 敌人网格 */}
       {!loading && !error && enemies.length > 0 && (
         <div className="grid gap-2" style={{
-          gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))',
+          gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))',
           justifyContent: 'center',
         }}>
           {enemies.map(enemy => (

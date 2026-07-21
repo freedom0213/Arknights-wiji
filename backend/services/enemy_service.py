@@ -89,37 +89,68 @@ def search_enemies(query: str, limit: int = 20) -> list[dict[str, Any]]:
     return [_row_to_dict(r) for r in rows]
 
 
-def get_enemy_stage_stats(enemy_key: str) -> list[dict[str, Any]]:
+def get_enemy_stage_stats(enemy_key: str) -> dict[str, Any]:
     """
-    查询该敌人在各关卡中的具体属性（从 enemy_database 表）。
+    查询敌人的详细属性（从 enemy_database 表的 JSON 中解析）。
 
-    SQL 等价:
-        SELECT * FROM enemy_database WHERE key = ? OR enemyId = ?
+    enemy_database 结构:
+        Key = enemyId (如 enemy_1007_slime)
+        Value = JSON 数组 [{level, enemyData: {name, attributes: {maxHp, atk, def, ...}}}]
     """
     tables = reflect_tables()
     if "enemy_database" not in tables:
-        return []
+        return {"levels": []}
 
+    import json
     table = tables["enemy_database"]
-    # enemy_database 中每条记录是一个展平行，查找 enemyId 或 key
-    conditions = []
-    for col_name_pattern in ["key", "enemyId", "enemyKey"]:
-        col = _find_col(table.columns, col_name_pattern)
-        if col is not None:
-            conditions.append(col == str(enemy_key))
+    key_col = _find_col(table.columns, "Key")
+    if key_col is None:
+        return {"levels": []}
 
-    if not conditions:
-        return []
-
-    stmt = select(table)
-    # 用 OR 连接多个可能的列匹配
-    from sqlalchemy import or_
-    stmt = stmt.where(or_(*conditions)).limit(100)
-
+    stmt = select(table).where(key_col == str(enemy_key))
     with engine.connect() as conn:
-        rows = conn.execute(stmt).mappings().all()
+        row = conn.execute(stmt).mappings().first()
 
-    return [_row_to_dict(r) for r in rows]
+    if not row:
+        # 找不到精确匹配，尝试模糊匹配
+        stmt = select(table).where(key_col.like(f"{enemy_key}%")).limit(5)
+        with engine.connect() as conn:
+            row = conn.execute(stmt).mappings().first()
+
+    if not row:
+        return {"levels": []}
+
+    row_dict = _row_to_dict(row)
+    raw_value = row_dict.get("Value", "[]")
+
+    try:
+        level_list = json.loads(raw_value) if isinstance(raw_value, str) else raw_value
+    except (json.JSONDecodeError, TypeError):
+        return {"levels": []}
+
+    # 解析每个 level 的属性
+    result_levels = []
+    for entry in (level_list if isinstance(level_list, list) else []):
+        enemy_data = entry.get("enemyData", {})
+        attrs_raw = enemy_data.get("attributes", {})
+        # 提取实际的 m_value，过滤 m_defined=false 的属性
+        attrs: dict[str, Any] = {}
+        for key, val in (attrs_raw.items() if isinstance(attrs_raw, dict) else {}):
+            if isinstance(val, dict) and val.get("m_defined"):
+                attrs[key] = val.get("m_value")
+        # 提取其他有用字段
+        name = ""
+        name_obj = enemy_data.get("name", {})
+        if isinstance(name_obj, dict) and name_obj.get("m_defined"):
+            name = name_obj.get("m_value", "")
+
+        result_levels.append({
+            "level": entry.get("level"),
+            "name": name,
+            "attributes": attrs,
+        })
+
+    return {"enemy_key": enemy_key, "levels": result_levels}
 
 
 def _find_col(columns, field_name: str):

@@ -64,6 +64,16 @@ export function searchEnemies(q: string, limit = 20) {
   return request<Enemy[]>(`/enemies/search?q=${encodeURIComponent(q)}&limit=${limit}`)
 }
 
+export interface EnemyLevelStats {
+  level: number; name: string; attributes: Record<string, any>
+}
+export interface EnemyStageStatsResponse {
+  enemy_key: string; levels: EnemyLevelStats[]
+}
+export function fetchEnemyStageStats(id: string) {
+  return request<EnemyStageStatsResponse>(`/enemies/${encodeURIComponent(id)}/stages`)
+}
+
 // ========== 技能 ==========
 export interface SkillLevel {
   name: string; description: string; skillType: string

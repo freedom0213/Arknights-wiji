@@ -44,5 +44,9 @@ async def api_get_enemy(enemy_id: str):
 
 @router.get("/enemies/{enemy_id}/stages")
 async def api_get_enemy_stages(enemy_id: str):
-    """查询该敌人在各关卡中的具体属性"""
-    return get_enemy_stage_stats(enemy_id)
+    """查询该敌人的详细属性（HP、攻击、防御等）"""
+    enemy = get_enemy_by_id(enemy_id)
+    if not enemy:
+        raise HTTPException(status_code=404, detail=f"敌人 '{enemy_id}' 不存在")
+    # 用 enemyId 字段去 enemy_database 查属性
+    return get_enemy_stage_stats(enemy.get("enemyId") or enemy_id)

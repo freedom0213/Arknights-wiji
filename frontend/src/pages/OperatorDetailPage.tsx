@@ -61,6 +61,30 @@ const STAT_LABELS: Record<string, string> = {
   respawnTime: '再部署时间',
 }
 
+// 天赋 blackboard 常用 key 中文映射
+const BB_KEY_LABELS: Record<string, string> = {
+  ...STAT_LABELS,
+  prob: '触发概率', interval: '间隔', sp: '技力', cnt: '次数',
+  times: '次数', duration: '持续时间', range: '范围',
+  mv_spd: '移动速度', move_speed: '移动速度',
+  atk_scale: '攻击倍率', def_scale: '防御倍率',
+  damage: '伤害', heal: '治疗量', hp_ratio: '生命比例',
+  talent_scale: '天赋倍率', base_attack_time: '攻击间隔',
+}
+
+// 格式化 blackboard 数值：优先用 valueStr，小数值当百分比处理
+function formatBlackboardValue(b: any): string {
+  if (typeof b?.valueStr === 'string' && b.valueStr !== '') return b.valueStr
+  const value = Number(b?.value ?? 0)
+  if (isNaN(value)) return String(b?.value ?? '')
+  // 绝对值在 0~1 之间的小数大概率是百分比，乘以 100 显示
+  if (Math.abs(value) > 0 && Math.abs(value) < 1 && value !== 0) {
+    return `${(value * 100).toFixed(0)}%`
+  }
+  // 整数值直接显示
+  return String(Math.round(value))
+}
+
 // 安全工具：确保值为数组
 function ensureArray(x: any): any[] {
   if (Array.isArray(x)) return x
@@ -421,14 +445,19 @@ function TalentCard({ talent, index }: { talent: any; index: number }) {
         {candidates.map((c: any, j: number) => {
           const phase = String(c?.unlockCondition?.phase || '').replace('PHASE_', '') || '0'
           const pot = c?.requiredPotentialRank ? ` 潜能${c.requiredPotentialRank}` : ''
+          // 去除天赋描述中的 HTML 标签 <@ba.talpu> 等
+          const desc = String(c?.description || '无描述').replace(/<[^>]+>/g, '')
           const bb = ensureArray(c?.blackboard)
             .filter((b: any) => b?.valueStr || b?.value != null)
-            .map((b: any) => typeof b?.valueStr === 'string' ? `${b.key}: ${b.valueStr}` : `${b.key}: ${((b?.value ?? 0) * 100).toFixed(0)}%`)
+            .map((b: any) => {
+              const label = BB_KEY_LABELS[b.key] || b.key
+              return `${label}: ${formatBlackboardValue(b)}`
+            })
             .join(', ')
           return (
             <div key={j} style={{ fontSize: '13px', padding: '6px 12px', background: 'var(--bg-secondary)', borderRadius: '4px' }}>
               <span style={{ color: 'var(--accent-gold)', fontWeight: 500, marginRight: '8px' }}>精英{phase}{pot}</span>
-              <span style={{ color: 'var(--text-secondary)' }}>{c?.description || '无描述'}</span>
+              <span style={{ color: 'var(--text-secondary)' }}>{desc}</span>
               {bb ? <div style={{ color: '#80d0a0', fontSize: '11px', marginTop: '2px' }}>{bb}</div> : null}
             </div>
           )

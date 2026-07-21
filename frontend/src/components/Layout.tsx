@@ -13,7 +13,7 @@ export default function Layout() {
   ]
 
   return (
-    <div className="min-h-screen flex flex-col" style={{ background: 'var(--bg-primary)' }}>
+    <div className="min-h-screen flex flex-col" style={{ background: 'rgba(10, 10, 15, 0.72)' }}>
       {/* 顶部导航：全宽 */}
       <header style={{
         background: 'var(--bg-secondary)',
@@ -26,7 +26,7 @@ export default function Layout() {
           display: 'flex', alignItems: 'center', gap: '8px',
           textDecoration: 'none',
         }}>
-          <img src="/3.png" alt="ArkWiji" style={{ height: '36px', width: '36px', borderRadius: '50%', objectFit: 'cover' }} />
+          <img src="/3.png" alt="ArkWiji" style={{ height: '64px', width: '64px', borderRadius: '50%', objectFit: 'cover' }} />
         </Link>
 
         <div style={{

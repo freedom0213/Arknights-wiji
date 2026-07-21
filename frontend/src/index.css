@@ -19,11 +19,12 @@ body {
   font-family: 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif;
   color: var(--text-primary);
   min-height: 100vh;
-  /* 背景图：居中、原始比例、固定不动 */
-  background:
-    linear-gradient(rgba(10, 10, 15, 0.7), rgba(10, 10, 15, 0.7)),
-    url('/2.jpg') center / contain no-repeat fixed;
   background-color: var(--bg-primary);
+  background-image: url('/2.jpg');
+  background-position: center center;
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-attachment: fixed;
 }
 ::-webkit-scrollbar { width: 6px; }
 ::-webkit-scrollbar-track { background: var(--bg-secondary); }

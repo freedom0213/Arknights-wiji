@@ -23,6 +23,9 @@ data/extracted/
 .idea/
 .vscode/
 
+# 本地素材（不受 git 管理）
+jpgs/
+
 # OS
 .DS_Store
 Thumbs.db

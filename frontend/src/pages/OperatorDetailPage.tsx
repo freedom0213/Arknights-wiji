@@ -275,12 +275,13 @@ export default function OperatorDetailPage() {
             <div key={i} style={{ marginBottom: i < phases.length - 2 ? '12px' : 0 }}>
               <h4 style={{ color: 'var(--accent-gold)', fontSize: '14px', fontWeight: 600, marginBottom: '6px' }}>
                 精英 {i + 1}
-                {p?.evolveCost ? ` — 龙门币 x${p.evolveCost}` : ''}
               </h4>
               <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px' }}>
-                {p?.evolveCost ? <MaterialChip label="龙门币" count={p.evolveCost} /> : null}
+                {ensureArray(p?.evolveCost).map((m: any, j: number) => (
+                  <MaterialChip key={`evo-${j}`} label={`[${m?.id ?? '?'}]`} count={m?.count ?? 0} />
+                ))}
                 {ensureArray(p?.levelUpCost).map((m: any, j: number) => (
-                  <MaterialChip key={j} label={`[${m?.id ?? '?'}]`} count={m?.count ?? 0} />
+                  <MaterialChip key={`lvl-${j}`} label={`[${m?.id ?? '?'}]`} count={m?.count ?? 0} />
                 ))}
               </div>
             </div>

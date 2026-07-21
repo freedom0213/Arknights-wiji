@@ -1,7 +1,7 @@
 import { useState, Component } from 'react'
 import { useParams, Link } from 'react-router-dom'
 import { useQuery, useQueries } from '@tanstack/react-query'
-import { fetchOperator, fetchSkill, type SkillData } from '../api/client'
+import { fetchOperator, fetchSkill, fetchItemsBatch, type SkillData } from '../api/client'
 import { SkeletonDetail, SkeletonSection } from '../components/Skeleton'
 import { ErrorState } from '../components/StateView'
 
@@ -67,11 +67,62 @@ function ensureArray(x: any): any[] {
   return []
 }
 
-// 安全工具：把材料数组渲染为字符串
-function materialsStr(cost: any): string {
+// 解析技能描述中的模板变量 {key:format}，用 blackboard 数据替换
+// 明日方舟的技能描述使用 {atk:0%} / {attack@def:0.0} 等占位符
+// blackboard 数组中存储了实际的数值
+function resolveSkillDescription(description: string, blackboard: any[]): string {
+  if (!description) return ''
+  const bb = ensureArray(blackboard)
+  // 构建 key → entry 的映射
+  const map: Record<string, any> = {}
+  bb.forEach((b: any) => { if (b?.key) map[b.key] = b })
+
+  return description
+    .replace(/<[^>]+>/g, '')  // 去除 HTML 标签 <@ba.vup> 等
+    .replace(/\{([^}:]+)(?::([^}]*))?\}/g, (_match, key: string, format: string) => {
+      const entry = map[key]
+      if (!entry) return `{${key}}`  // 找不到则保留原文
+      // 如果有 valueStr 字段且非 null，直接使用
+      if (entry.valueStr != null && entry.valueStr !== '') return String(entry.valueStr)
+      const value = Number(entry.value ?? 0)
+      if (isNaN(value)) return `{${key}}`
+      // 根据格式后缀渲染数值
+      if (format === '0%') return `${(value * 100).toFixed(0)}%`
+      if (format === '0.0') return value.toFixed(1)
+      if (format === '0.0%') return `${(value * 100).toFixed(1)}%`
+      if (format === '0') return String(Math.round(value))
+      if (format) return `${value}${format}`  // 保留未识别的格式后缀
+      return String(value)
+    })
+}
+
+// 收集操作员数据中所有材料 ID
+function collectMaterialIds(phases: any[], skills: any[], allSkillLvlup: any[]): string[] {
+  const ids = new Set<string>()
+  phases.forEach((p: any) => {
+    ensureArray(p?.evolveCost).forEach((m: any) => { if (m?.id) ids.add(String(m.id)) })
+    ensureArray(p?.levelUpCost).forEach((m: any) => { if (m?.id) ids.add(String(m.id)) })
+  })
+  skills.forEach((s: any) => {
+    ensureArray(s?.levelUpCostCond).forEach((entry: any) => {
+      ensureArray(entry?.levelUpCost).forEach((m: any) => { if (m?.id) ids.add(String(m.id)) })
+    })
+  })
+  allSkillLvlup.forEach((entry: any) => {
+    ensureArray(entry?.lvlUpCost).forEach((m: any) => { if (m?.id) ids.add(String(m.id)) })
+  })
+  return Array.from(ids)
+}
+
+// 安全工具：把材料数组渲染为字符串（带名称解析）
+function materialsStr(cost: any, materialMap: Record<string, any>): string {
   const arr = ensureArray(cost)
   if (arr.length === 0) return '无'
-  return arr.map((m: any) => `[${m?.id ?? '?'}] x${m?.count ?? 0}`).join(' + ')
+  return arr.map((m: any) => {
+    const id = String(m?.id ?? '?')
+    const name = materialMap[id]?.name || id
+    return `${name} x${m?.count ?? 0}`
+  }).join(' + ')
 }
 
 export default function OperatorDetailPage() {
@@ -100,6 +151,14 @@ export default function OperatorDetailPage() {
       queryFn: () => fetchSkill(s?.skillId),
       enabled: !!id && !!s?.skillId,
     })),
+  })
+
+  // 批量获取所有材料名称
+  const materialIds = collectMaterialIds(phases, parsedSkills, allSkillLvlup)
+  const { data: materialMap = {} as Record<string, any> } = useQuery({
+    queryKey: ['materials-batch', materialIds.join(',')],
+    queryFn: () => fetchItemsBatch(materialIds),
+    enabled: materialIds.length > 0,
   })
 
   if (isLoading) {
@@ -246,6 +305,29 @@ export default function OperatorDetailPage() {
         </Section>
       )}
 
+      {/* 精英化材料 — 放在技能上方 */}
+      {phases.length > 1 && (
+        <Section title="精英化条件">
+          {phases.slice(1).map((p: any, i: number) => (
+            <div key={i} style={{ marginBottom: i < phases.length - 2 ? '12px' : 0 }}>
+              <h4 style={{ color: 'var(--accent-gold)', fontSize: '14px', fontWeight: 600, marginBottom: '6px' }}>
+                精英 {i + 1}
+              </h4>
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px' }}>
+                {ensureArray(p?.evolveCost).map((m: any, j: number) => {
+                  const matName = (materialMap as Record<string, any>)[m?.id]?.name
+                  return <MaterialChip key={`evo-${j}`} label={matName || `[${m?.id ?? '?'}]`} count={m?.count ?? 0} />
+                })}
+                {ensureArray(p?.levelUpCost).map((m: any, j: number) => {
+                  const matName = (materialMap as Record<string, any>)[m?.id]?.name
+                  return <MaterialChip key={`lvl-${j}`} label={matName || `[${m?.id ?? '?'}]`} count={m?.count ?? 0} />
+                })}
+              </div>
+            </div>
+          ))}
+        </Section>
+      )}
+
       {/* 技能 */}
       {parsedSkills.length > 0 && (
         <Section title={`技能 (${parsedSkills.length})`}>
@@ -254,7 +336,7 @@ export default function OperatorDetailPage() {
             const maxLevel = skillData?.levels?.[skillData.levels.length - 1]
             return (
               <SkillCard key={i} index={i} skillRef={s} maxLevel={maxLevel}
-                isLoading={skillQueries[i]?.isLoading ?? false} />
+                isLoading={skillQueries[i]?.isLoading ?? false} materialMap={materialMap} />
             )
           })}
         </Section>
@@ -267,31 +349,10 @@ export default function OperatorDetailPage() {
             {allSkillLvlup.map((entry: any, i: number) => (
               <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '6px 10px', background: 'var(--bg-secondary)', borderRadius: '4px', fontSize: '13px' }}>
                 <span style={{ color: 'var(--accent)', fontWeight: 600, minWidth: '60px' }}>Lv.{i + 1}→{i + 2}</span>
-                <span style={{ color: 'var(--text-secondary)' }}>{materialsStr(entry?.lvlUpCost)}</span>
+                <span style={{ color: 'var(--text-secondary)' }}>{materialsStr(entry?.lvlUpCost, materialMap)}</span>
               </div>
             ))}
           </div>
-        </Section>
-      )}
-
-      {/* 精英化材料 */}
-      {phases.length > 1 && (
-        <Section title="精英化条件">
-          {phases.slice(1).map((p: any, i: number) => (
-            <div key={i} style={{ marginBottom: i < phases.length - 2 ? '12px' : 0 }}>
-              <h4 style={{ color: 'var(--accent-gold)', fontSize: '14px', fontWeight: 600, marginBottom: '6px' }}>
-                精英 {i + 1}
-              </h4>
-              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px' }}>
-                {ensureArray(p?.evolveCost).map((m: any, j: number) => (
-                  <MaterialChip key={`evo-${j}`} label={`[${m?.id ?? '?'}]`} count={m?.count ?? 0} />
-                ))}
-                {ensureArray(p?.levelUpCost).map((m: any, j: number) => (
-                  <MaterialChip key={`lvl-${j}`} label={`[${m?.id ?? '?'}]`} count={m?.count ?? 0} />
-                ))}
-              </div>
-            </div>
-          ))}
         </Section>
       )}
     </div>
@@ -377,11 +438,12 @@ function TalentCard({ talent, index }: { talent: any; index: number }) {
   )
 }
 
-function SkillCard({ index, skillRef, maxLevel, isLoading }: {
-  index: number; skillRef: any; maxLevel?: any; isLoading: boolean
+function SkillCard({ index, skillRef, maxLevel, isLoading, materialMap }: {
+  index: number; skillRef: any; maxLevel?: any; isLoading: boolean; materialMap: Record<string, any>
 }) {
   const unlockCond = skillRef?.unlockCond
   const levelUpCosts = ensureArray(skillRef?.levelUpCostCond)
+  const blackboard = ensureArray(maxLevel?.blackboard)
 
   return (
     <div style={{ marginBottom: '16px', paddingBottom: '16px', borderBottom: '1px solid var(--border-color)' }}>
@@ -423,7 +485,7 @@ function SkillCard({ index, skillRef, maxLevel, isLoading }: {
 
       {maxLevel?.description && (
         <p style={{ color: 'var(--text-secondary)', fontSize: '13px', lineHeight: 1.5, marginBottom: '8px' }}>
-          {String(maxLevel.description).replace(/<[^>]+>/g, '')}
+          {resolveSkillDescription(maxLevel.description, blackboard)}
         </p>
       )}
 
@@ -435,7 +497,7 @@ function SkillCard({ index, skillRef, maxLevel, isLoading }: {
           {levelUpCosts.map((entry: any, j: number) => (
             <div key={j} style={{ padding: '4px 0', fontSize: '12px' }}>
               <span style={{ color: 'var(--accent-gold)' }}>专精 {j + 1}</span>
-              {' — '}{materialsStr(entry?.levelUpCost)}
+              {' — '}{materialsStr(entry?.levelUpCost, materialMap)}
             </div>
           ))}
         </details>

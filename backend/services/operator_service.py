@@ -36,11 +36,10 @@ def list_operators(
     conditions = []
     if rarity is not None:
         # rarity 存储为 TEXT 格式: "TIER_1" ~ "TIER_6"
-        # 筛选 >= rarity 的稀有度：生成匹配的 TIER 值列表
+        # 精确匹配指定稀有度
         rarity_col = _find_col(cols, "rarity")
         if rarity_col is not None:
-            tier_values = [f"TIER_{i}" for i in range(rarity, 7)]  # TIER_5, TIER_6
-            conditions.append(rarity_col.in_(tier_values))
+            conditions.append(rarity_col == f"TIER_{rarity}")
     if profession:
         prof_col = _find_col(cols, "profession")
         if prof_col is not None:

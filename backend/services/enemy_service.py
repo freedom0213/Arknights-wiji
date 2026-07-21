@@ -24,9 +24,12 @@ def list_enemies(
     conditions = []
 
     if enemy_type:
-        type_col = _find_col(table.columns, "enemyTags")
+        # 前端传入中文（普通/精英/BOSS），数据库存储英文（NORMAL/ELITE/BOSS）
+        LEVEL_MAP = {"普通": "NORMAL", "精英": "ELITE", "BOSS": "BOSS"}
+        db_value = LEVEL_MAP.get(enemy_type, enemy_type)
+        type_col = _find_col(table.columns, "enemyLevel")
         if type_col is not None:
-            conditions.append(type_col.like(f"%{enemy_type}%"))
+            conditions.append(type_col == db_value)
 
     # 计数
     count_stmt = select(text("COUNT(*)")).select_from(table)

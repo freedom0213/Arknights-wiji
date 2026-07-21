@@ -1,7 +1,7 @@
 """材料 API 路由"""
 from fastapi import APIRouter, HTTPException, Query
 
-from services.material_service import get_item_by_id, search_items
+from services.material_service import get_item_by_id, get_items_batch, search_items
 
 router = APIRouter()
 
@@ -13,6 +13,15 @@ async def api_search_materials(
 ):
     """按名称搜索材料/物品"""
     return search_items(query=q, limit=limit)
+
+
+@router.get("/materials/batch")
+async def api_get_materials_batch(
+    ids: str = Query(..., min_length=1, description="逗号分隔的材料ID列表，如 3303,30054,31013"),
+):
+    """批量获取材料/物品信息，返回 {id: item} 映射"""
+    id_list = [i.strip() for i in ids.split(",") if i.strip()]
+    return get_items_batch(id_list)
 
 
 @router.get("/materials/{item_id}")

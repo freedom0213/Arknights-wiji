@@ -39,6 +39,22 @@ def search_items(query: str, limit: int = 20) -> list[dict[str, Any]]:
     return [_row_to_dict(r) for r in rows]
 
 
+def get_items_batch(item_ids: list[str]) -> dict[str, dict[str, Any]]:
+    """
+    批量查询材料/物品，返回 {id: item_dict} 映射。
+
+    SQL 等价:
+        SELECT * FROM items WHERE id IN (?, ?, ...)
+    """
+    if not item_ids:
+        return {}
+    table = get_table("items")
+    stmt = select(table).where(table.c.id.in_([str(i) for i in item_ids]))
+    with engine.connect() as conn:
+        rows = conn.execute(stmt).mappings().all()
+    return {str(_row_to_dict(r).get("id")): _row_to_dict(r) for r in rows}
+
+
 def _find_col(columns, field_name: str):
     for col in columns:
         col_name = str(col.name).lower().replace("_", "")

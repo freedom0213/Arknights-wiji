@@ -140,3 +140,11 @@ export interface SearchAllResponse {
 export function searchAll(q: string, limit = 5) {
   return request<SearchAllResponse>(`/search?q=${encodeURIComponent(q)}&limit=${limit}`)
 }
+
+// ========== 材料 ==========
+export function fetchItemsBatch(ids: string[]) {
+  if (ids.length === 0) return Promise.resolve({})
+  return request<Record<string, { id: string; name: string; iconId: string }>>(
+    `/materials/batch?ids=${ids.join(',')}`
+  )
+}

@@ -82,7 +82,7 @@ export function fetchSkill(id: string) {
 export interface Stage {
   id: string; stageId: string; code: string; name: string
   stageType: string; zoneId: string; difficulty: string
-  unlockCondition: string; apCost: string
+  unlockCondition: string; apCost: number | null
 }
 
 export interface StageListResponse {
@@ -95,8 +95,26 @@ export function fetchStages(params: Record<string, string | number>) {
   return request<StageListResponse>(`/stages?${qs}`)
 }
 
+// 今天开放的关卡
+export interface TodayStagesResponse {
+  today: { date: string; weekday: number; weekday_name: string }
+  open_stages: Stage[]
+}
+export function fetchTodayStages() {
+  return request<TodayStagesResponse>('/stages/today')
+}
+
+// 每周日程
+export interface ScheduleDay {
+  weekday: number; weekday_name: string; is_today: boolean
+  zone_ids: string[]; stage_count: number; stages: Stage[]
+}
+export interface WeeklyScheduleResponse {
+  today: { date: string; weekday: number; weekday_name: string }
+  daily_schedule: ScheduleDay[]
+}
 export function fetchWeeklySchedule() {
-  return request<any>('/stages/weekly-schedule')
+  return request<WeeklyScheduleResponse>('/stages/weekly-schedule')
 }
 
 export function fetchZones() {

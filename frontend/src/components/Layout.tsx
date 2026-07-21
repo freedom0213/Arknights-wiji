@@ -20,10 +20,19 @@ export default function Layout() {
         borderBottom: '1px solid var(--border-color)',
         position: 'sticky', top: 0, zIndex: 50,
       }}>
+        {/* 吉祥物：固定在左上角 */}
+        <Link to="/" style={{
+          position: 'absolute', top: '6px', left: '16px', zIndex: 51,
+          display: 'flex', alignItems: 'center', gap: '8px',
+          textDecoration: 'none',
+        }}>
+          <img src="/3.png" alt="ArkWiji" style={{ height: '36px', width: '36px', borderRadius: '50%', objectFit: 'cover' }} />
+        </Link>
+
         <div style={{
           display: 'flex', alignItems: 'center',
           maxWidth: '1024px', margin: '0 auto',
-          padding: '8px 16px', position: 'relative',
+          padding: '8px 16px 8px 52px', position: 'relative',
         }}>
           {/* 左侧：导航链接 */}
           <nav className="flex gap-1">

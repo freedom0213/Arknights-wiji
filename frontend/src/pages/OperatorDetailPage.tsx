@@ -1,7 +1,32 @@
-import { useState } from 'react'
+import { useState, Component } from 'react'
 import { useParams, Link } from 'react-router-dom'
 import { useQuery, useQueries } from '@tanstack/react-query'
 import { fetchOperator, fetchSkill, type SkillData } from '../api/client'
+
+// React Error Boundary：捕获子组件渲染错误，防止整个页面黑屏
+class ErrorBoundary extends Component<{ children: React.ReactNode }, { hasError: boolean; error: Error | null }> {
+  constructor(props: any) {
+    super(props)
+    this.state = { hasError: false, error: null }
+  }
+  static getDerivedStateFromError(error: Error) {
+    return { hasError: true, error }
+  }
+  render() {
+    if (this.state.hasError) {
+      return (
+        <div style={{ textAlign: 'center', padding: '80px 20px' }}>
+          <p style={{ color: 'var(--danger)', fontSize: '18px', marginBottom: '12px' }}>页面渲染出错</p>
+          <p style={{ color: 'var(--text-secondary)', fontSize: '13px', marginBottom: '16px' }}>
+            {this.state.error?.message || '未知错误'}
+          </p>
+          <Link to="/operators" style={{ color: 'var(--accent)', fontSize: '14px' }}>← 返回干员列表</Link>
+        </div>
+      )
+    }
+    return this.props.children
+  }
+}
 
 // 职业 & 稀有度映射
 const PROF_MAP: Record<string, string> = {
@@ -89,6 +114,7 @@ export default function OperatorDetailPage() {
   const nationName = NATION_MAP[op.nationId?.toLowerCase()] || op.nationId
 
   return (
+    <ErrorBoundary>
     <div>
       <Link to="/operators" style={{ color: 'var(--text-secondary)', fontSize: '14px' }}>
         ← 返回干员列表
@@ -250,7 +276,7 @@ export default function OperatorDetailPage() {
                   Lv.{i + 1}→{i + 2}
                 </span>
                 <span style={{ color: 'var(--text-secondary)' }}>
-                  {entry?.lvlUpCost?.map((m: any) => `[${m.id}] x${m.count}`).join(' + ') || '无材料'}
+                  {(entry?.lvlUpCost || []).map((m: any) => `[${m.id}] x${m.count}`).join(' + ') || '无材料'}
                 </span>
               </div>
             ))}
@@ -278,6 +304,7 @@ export default function OperatorDetailPage() {
         </Section>
       )}
     </div>
+    </ErrorBoundary>
   )
 }
 
@@ -435,7 +462,7 @@ function SkillCard({ index, skillRef, maxLevel, isLoading }: {
             <div key={j} style={{ padding: '4px 0', fontSize: '12px' }}>
               <span style={{ color: 'var(--accent-gold)' }}>专精 {j + 1}</span>
               {' — '}
-              {entry?.levelUpCost?.map((m: any) => `[${m.id}] x${m.count}`).join(' + ') || '无'}
+              {(entry?.levelUpCost || []).map((m: any) => `[${m.id}] x${m.count}`).join(' + ') || '无'}
             </div>
           ))}
         </details>

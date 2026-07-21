@@ -64,6 +64,20 @@ export function searchEnemies(q: string, limit = 20) {
   return request<Enemy[]>(`/enemies/search?q=${encodeURIComponent(q)}&limit=${limit}`)
 }
 
+// ========== 技能 ==========
+export interface SkillLevel {
+  name: string; description: string; skillType: string
+  durationType: string; spData: any; blackboard: any[]
+}
+export interface SkillData {
+  id: string; skillId: string; iconId: string; hidden: number
+  levels: SkillLevel[]
+}
+
+export function fetchSkill(id: string) {
+  return request<SkillData>(`/skills/${encodeURIComponent(id)}`)
+}
+
 // ========== 关卡 ==========
 export interface Stage {
   id: string; stageId: string; code: string; name: string

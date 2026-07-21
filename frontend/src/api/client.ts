@@ -120,3 +120,23 @@ export function fetchWeeklySchedule() {
 export function fetchZones() {
   return request<any[]>('/zones')
 }
+
+// ========== 全站搜索 ==========
+export interface SearchResultOperator {
+  id: string; name: string; rarity: string
+}
+export interface SearchResultEnemy {
+  id: string; name: string; enemyLevel: string
+}
+export interface SearchResultStage {
+  id: string; code: string; name: string; apCost: number | null
+}
+export interface SearchAllResponse {
+  operators: SearchResultOperator[]
+  enemies: SearchResultEnemy[]
+  stages: SearchResultStage[]
+}
+
+export function searchAll(q: string, limit = 5) {
+  return request<SearchAllResponse>(`/search?q=${encodeURIComponent(q)}&limit=${limit}`)
+}

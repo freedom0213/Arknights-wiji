@@ -4,6 +4,7 @@ import { fetchEnemies, searchEnemies } from '../api/client'
 import type { Enemy } from '../api/client'
 import { SkeletonCardGrid } from '../components/Skeleton'
 import { ErrorState, EmptyState } from '../components/StateView'
+import Pagination from '../components/Pagination'
 import { useDebounce } from '../hooks/useDebounce'
 
 const LEVEL_LABEL: Record<string, string> = {
@@ -46,104 +47,99 @@ export default function EnemiesPage() {
 
   return (
     <div>
-      <h1 style={{ fontSize: '24px', fontWeight: 700, marginBottom: '16px', color: 'var(--text-primary)' }}>
-        ⬖ 敌人图鉴
-      </h1>
+      {/* 标题 + 筛选器：一行，标题左 筛选右 */}
+      <div className="flex justify-between items-center mb-4" style={{ minHeight: '40px' }}>
+        <h1 style={{ fontSize: '24px', fontWeight: 700, color: 'var(--text-primary)', whiteSpace: 'nowrap' }}>
+          ⬖ 敌人图鉴
+          {!loading && !error && (
+            <span style={{ color: 'var(--text-secondary)', fontSize: '14px', fontWeight: 400, marginLeft: '8px' }}>
+              共 {total} 个
+            </span>
+          )}
+        </h1>
 
-      <div className="flex flex-wrap gap-3 mb-4">
-        <input
-          type="text" placeholder="搜索敌人名…" value={search}
-          onChange={e => { setSearch(e.target.value); setPage(1) }}
-          style={{
-            background: 'var(--bg-card)', border: '1px solid var(--border-color)',
-            color: 'var(--text-primary)', padding: '8px 14px', borderRadius: '6px',
-            outline: 'none', fontSize: '14px',
-          }}
-        />
-        {debouncedSearch !== search && (
-          <span style={{ color: 'var(--text-secondary)', fontSize: '12px', alignSelf: 'center' }}>输入中…</span>
-        )}
-        <select value={levelFilter} onChange={e => setLevelFilter(e.target.value)}
-          style={{
-            background: 'var(--bg-card)', border: '1px solid var(--border-color)',
-            color: 'var(--text-primary)', padding: '8px 12px', borderRadius: '6px', fontSize: '14px',
-          }}>
-          <option value="">全部等级</option>
-          <option value="NORMAL">普通</option>
-          <option value="ELITE">精英</option>
-          <option value="BOSS">Boss</option>
-        </select>
+        <div className="flex gap-2 items-center">
+          <input
+            type="text" placeholder="搜索敌人名…" value={search}
+            onChange={e => { setSearch(e.target.value); setPage(1) }}
+            style={{
+              background: 'var(--bg-card)', border: '1px solid var(--border-color)',
+              color: 'var(--text-primary)', padding: '7px 12px', borderRadius: '6px',
+              fontSize: '13px', outline: 'none', width: '150px',
+            }}
+          />
+          {debouncedSearch !== search && (
+            <span style={{ color: 'var(--text-secondary)', fontSize: '11px' }}>…</span>
+          )}
+          <select value={levelFilter} onChange={e => { setLevelFilter(e.target.value); setPage(1) }}
+            style={{
+              background: 'var(--bg-card)', border: '1px solid var(--border-color)',
+              color: 'var(--text-primary)', padding: '7px 10px', borderRadius: '6px', fontSize: '13px',
+            }}>
+            <option value="">全部等级</option>
+            <option value="NORMAL">普通</option>
+            <option value="ELITE">精英</option>
+            <option value="BOSS">Boss</option>
+          </select>
+        </div>
       </div>
 
-      {/* 加载中：骨架屏 */}
+      {/* 加载中 */}
       {loading && <SkeletonCardGrid count={12} columns="repeat(auto-fill, minmax(240px, 1fr))" />}
 
-      {/* 错误状态 */}
+      {/* 错误 */}
       {!loading && error && <ErrorState message={error} onRetry={loadData} />}
 
-      {/* 空状态 */}
+      {/* 空 */}
       {!loading && !error && enemies.length === 0 && (
         <EmptyState message={debouncedSearch ? `未找到匹配 "${debouncedSearch}" 的敌人` : '暂无敌人数据'} />
       )}
 
+      {/* 敌人网格 */}
       {!loading && !error && enemies.length > 0 && (
-        <>
-          <p style={{ color: 'var(--text-secondary)', fontSize: '14px', marginBottom: '16px' }}>
-            共 {total} 个敌人
-          </p>
-          <div className="grid gap-2" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))' }}>
-            {enemies.map(enemy => (
-              <Link key={enemy.id} to={`/enemies/${enemy.id}`}
-                className="no-underline p-3 card-hover"
-                style={{
-                  background: 'var(--bg-card)', border: '1px solid var(--border-color)',
-                  borderRadius: '6px',
-                }}
-              >
-                <div className="flex items-center gap-2 mb-1">
-                  <span style={{
-                    fontSize: '11px', padding: '1px 8px', borderRadius: '3px',
-                    background: enemy.enemyLevel === 'BOSS' ? 'rgba(224,80,80,0.2)' :
-                      enemy.enemyLevel === 'ELITE' ? 'rgba(240,192,96,0.2)' : 'rgba(144,144,176,0.2)',
-                    color: enemy.enemyLevel === 'BOSS' ? 'var(--danger)' :
-                      enemy.enemyLevel === 'ELITE' ? 'var(--accent-gold)' : 'var(--text-secondary)',
-                  }}>
-                    {LEVEL_LABEL[enemy.enemyLevel] || enemy.enemyLevel}
-                  </span>
-                  {enemy.attackType && (
-                    <span style={{ color: 'var(--text-secondary)', fontSize: '11px' }}>{enemy.attackType}</span>
-                  )}
-                </div>
-                <div style={{ color: 'var(--text-primary)', fontWeight: 600, fontSize: '15px' }}>{enemy.name}</div>
-                {enemy.ability && (
-                  <div style={{
-                    color: 'var(--text-secondary)', fontSize: '12px', marginTop: '4px',
-                    overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
-                  }}>
-                    {enemy.ability}
-                  </div>
-                )}
-              </Link>
-            ))}
-          </div>
-        </>
-      )}
-
-      {!debouncedSearch && total > 60 && (
-        <div className="flex justify-center gap-2 mt-6">
-          {Array.from({ length: Math.ceil(total / 60) }, (_, i) => (
-            <button key={i} onClick={() => { setPage(i + 1); window.scrollTo({ top: 0, behavior: 'smooth' }) }}
+        <div className="grid gap-2" style={{
+          gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))',
+          justifyContent: 'center',
+        }}>
+          {enemies.map(enemy => (
+            <Link key={enemy.id} to={`/enemies/${enemy.id}`}
+              className="no-underline p-3 card-hover"
               style={{
-                background: page === i + 1 ? 'var(--accent)' : 'var(--bg-card)',
-                border: '1px solid var(--border-color)',
-                color: page === i + 1 ? '#000' : 'var(--text-secondary)',
-                padding: '6px 14px', borderRadius: '4px', cursor: 'pointer',
-                fontSize: '13px', transition: 'background 0.15s',
-              }}>
-              {i + 1}
-            </button>
+                background: 'var(--bg-card)', border: '1px solid var(--border-color)',
+                borderRadius: '6px',
+              }}
+            >
+              <div className="flex items-center gap-2 mb-1">
+                <span style={{
+                  fontSize: '11px', padding: '1px 8px', borderRadius: '3px',
+                  background: enemy.enemyLevel === 'BOSS' ? 'rgba(224,80,80,0.2)' :
+                    enemy.enemyLevel === 'ELITE' ? 'rgba(240,192,96,0.2)' : 'rgba(144,144,176,0.2)',
+                  color: enemy.enemyLevel === 'BOSS' ? 'var(--danger)' :
+                    enemy.enemyLevel === 'ELITE' ? 'var(--accent-gold)' : 'var(--text-secondary)',
+                }}>
+                  {LEVEL_LABEL[enemy.enemyLevel] || enemy.enemyLevel}
+                </span>
+                {enemy.attackType && (
+                  <span style={{ color: 'var(--text-secondary)', fontSize: '11px' }}>{enemy.attackType}</span>
+                )}
+              </div>
+              <div style={{ color: 'var(--text-primary)', fontWeight: 600, fontSize: '15px' }}>{enemy.name}</div>
+              {enemy.ability && (
+                <div style={{
+                  color: 'var(--text-secondary)', fontSize: '12px', marginTop: '4px',
+                  overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
+                }}>
+                  {enemy.ability}
+                </div>
+              )}
+            </Link>
           ))}
         </div>
+      )}
+
+      {/* 分页 */}
+      {!debouncedSearch && total > 60 && (
+        <Pagination current={page} total={total} pageSize={60} onChange={setPage} />
       )}
     </div>
   )

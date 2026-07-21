@@ -4,6 +4,7 @@ import { fetchOperators, searchOperators } from '../api/client'
 import type { Operator } from '../api/client'
 import { SkeletonCardGrid } from '../components/Skeleton'
 import { ErrorState, EmptyState } from '../components/StateView'
+import Pagination from '../components/Pagination'
 import { useDebounce } from '../hooks/useDebounce'
 
 const PROF_MAP: Record<string, string> = {
@@ -23,9 +24,8 @@ export default function OperatorsPage() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [search, setSearch] = useState('')
-  const [filters, setFilters] = useState({ rarity: '', profession: '', position: '' })
+  const [filters, setFilters] = useState({ rarity: '', profession: '' })
 
-  // 搜索防抖 300ms
   const debouncedSearch = useDebounce(search, 300)
 
   const loadData = useCallback(() => {
@@ -40,7 +40,6 @@ export default function OperatorsPage() {
           const params: Record<string, string | number> = { page, page_size: 60 }
           if (filters.rarity) params.rarity = Number(filters.rarity)
           if (filters.profession) params.profession = filters.profession
-          if (filters.position) params.position = filters.position
           return fetchOperators(params).then(data => {
             setOperators(data.items)
             setTotal(data.total)
@@ -55,104 +54,96 @@ export default function OperatorsPage() {
 
   return (
     <div>
-      <h1 style={{ fontSize: '24px', fontWeight: 700, marginBottom: '16px', color: 'var(--text-primary)' }}>
-        ◆ 干员图鉴
-      </h1>
+      {/* 标题 + 筛选器：一行，标题左 筛选右 */}
+      <div className="flex justify-between items-center mb-4" style={{ minHeight: '40px' }}>
+        <h1 style={{ fontSize: '24px', fontWeight: 700, color: 'var(--text-primary)', whiteSpace: 'nowrap' }}>
+          ◆ 干员图鉴
+          {!loading && !error && (
+            <span style={{ color: 'var(--text-secondary)', fontSize: '14px', fontWeight: 400, marginLeft: '8px' }}>
+              共 {total} 名
+            </span>
+          )}
+        </h1>
 
-      {/* 搜索和筛选 */}
-      <div className="flex flex-wrap gap-3 mb-4">
-        <input
-          type="text" placeholder="搜索干员名…"
-          value={search}
-          onChange={e => { setSearch(e.target.value); setPage(1) }}
-          style={{
-            background: 'var(--bg-card)', border: '1px solid var(--border-color)',
-            color: 'var(--text-primary)', padding: '8px 14px', borderRadius: '6px',
-            minWidth: '200px', outline: 'none', fontSize: '14px',
-          }}
-        />
-        {debouncedSearch !== search && (
-          <span style={{ color: 'var(--text-secondary)', fontSize: '12px', alignSelf: 'center' }}>输入中…</span>
-        )}
-        <select
-          value={filters.rarity}
-          onChange={e => setFilters(f => ({ ...f, rarity: e.target.value }))}
-          style={{
-            background: 'var(--bg-card)', border: '1px solid var(--border-color)',
-            color: 'var(--text-primary)', padding: '8px 12px', borderRadius: '6px', fontSize: '14px',
-          }}>
-          <option value="">全部稀有度</option>
-          {[6, 5, 4, 3, 2, 1].map(r => <option key={r} value={r}>{'★'.repeat(r)}</option>)}
-        </select>
-        <select
-          value={filters.profession}
-          onChange={e => setFilters(f => ({ ...f, profession: e.target.value }))}
-          style={{
-            background: 'var(--bg-card)', border: '1px solid var(--border-color)',
-            color: 'var(--text-primary)', padding: '8px 12px', borderRadius: '6px', fontSize: '14px',
-          }}>
-          <option value="">全部职业</option>
-          {Object.entries(PROF_MAP).map(([k, v]) => <option key={k} value={k}>{v}</option>)}
-        </select>
+        <div className="flex gap-2 items-center">
+          <input
+            type="text" placeholder="搜索干员名…"
+            value={search}
+            onChange={e => { setSearch(e.target.value); setPage(1) }}
+            style={{
+              background: 'var(--bg-card)', border: '1px solid var(--border-color)',
+              color: 'var(--text-primary)', padding: '7px 12px', borderRadius: '6px',
+              fontSize: '13px', outline: 'none', width: '150px',
+            }}
+          />
+          {debouncedSearch !== search && (
+            <span style={{ color: 'var(--text-secondary)', fontSize: '11px' }}>…</span>
+          )}
+          <select
+            value={filters.rarity}
+            onChange={e => { setFilters(f => ({ ...f, rarity: e.target.value })); setPage(1) }}
+            style={{
+              background: 'var(--bg-card)', border: '1px solid var(--border-color)',
+              color: 'var(--text-primary)', padding: '7px 10px', borderRadius: '6px', fontSize: '13px',
+            }}>
+            <option value="">全部稀有度</option>
+            {[6, 5, 4, 3, 2, 1].map(r => <option key={r} value={r}>{'★'.repeat(r)}</option>)}
+          </select>
+          <select
+            value={filters.profession}
+            onChange={e => { setFilters(f => ({ ...f, profession: e.target.value })); setPage(1) }}
+            style={{
+              background: 'var(--bg-card)', border: '1px solid var(--border-color)',
+              color: 'var(--text-primary)', padding: '7px 10px', borderRadius: '6px', fontSize: '13px',
+            }}>
+            <option value="">全部职业</option>
+            {Object.entries(PROF_MAP).map(([k, v]) => <option key={k} value={k}>{v}</option>)}
+          </select>
+        </div>
       </div>
 
-      {/* 加载中：骨架屏 */}
+      {/* 加载中 */}
       {loading && <SkeletonCardGrid count={12} />}
 
-      {/* 错误状态 */}
+      {/* 错误 */}
       {!loading && error && <ErrorState message={error} onRetry={loadData} />}
 
-      {/* 空状态 */}
+      {/* 空 */}
       {!loading && !error && operators.length === 0 && (
         <EmptyState message={debouncedSearch ? `未找到匹配 "${debouncedSearch}" 的干员` : '暂无干员数据'} />
       )}
 
-      {/* 结果计数 + 干员网格 */}
+      {/* 干员网格 */}
       {!loading && !error && operators.length > 0 && (
-        <>
-          <p style={{ color: 'var(--text-secondary)', fontSize: '14px', marginBottom: '16px' }}>
-            共 {total} 名干员 {debouncedSearch && `匹配 "${debouncedSearch}"`}
-          </p>
-          <div className="grid gap-2" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))' }}>
-            {operators.map(op => (
-              <Link
-                key={op.id} to={`/operators/${op.id}`}
-                className="no-underline p-3 card-hover"
-                style={{
-                  background: 'var(--bg-card)', border: '1px solid var(--border-color)',
-                  borderRadius: '6px',
-                }}
-              >
-                <div style={{ color: RARITY_MAP[op.rarity]?.color || '#909090', fontSize: '12px', marginBottom: '4px' }}>
-                  {'★'.repeat(RARITY_MAP[op.rarity]?.stars || 1)}
-                </div>
-                <div style={{ color: 'var(--text-primary)', fontWeight: 600, fontSize: '15px' }}>{op.name}</div>
-                <div style={{ color: 'var(--text-secondary)', fontSize: '12px', marginTop: '2px' }}>
-                  {PROF_MAP[op.profession] || op.profession}
-                  {op.subProfessionId ? ` · ${op.subProfessionId}` : ''}
-                </div>
-              </Link>
-            ))}
-          </div>
-        </>
+        <div className="grid gap-2" style={{
+          gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))',
+          justifyContent: 'center',
+        }}>
+          {operators.map(op => (
+            <Link
+              key={op.id} to={`/operators/${op.id}`}
+              className="no-underline p-3 card-hover"
+              style={{
+                background: 'var(--bg-card)', border: '1px solid var(--border-color)',
+                borderRadius: '6px',
+              }}
+            >
+              <div style={{ color: RARITY_MAP[op.rarity]?.color || '#909090', fontSize: '12px', marginBottom: '4px' }}>
+                {'★'.repeat(RARITY_MAP[op.rarity]?.stars || 1)}
+              </div>
+              <div style={{ color: 'var(--text-primary)', fontWeight: 600, fontSize: '15px' }}>{op.name}</div>
+              <div style={{ color: 'var(--text-secondary)', fontSize: '12px', marginTop: '2px' }}>
+                {PROF_MAP[op.profession] || op.profession}
+                {op.subProfessionId ? ` · ${op.subProfessionId}` : ''}
+              </div>
+            </Link>
+          ))}
+        </div>
       )}
 
       {/* 分页 */}
       {!debouncedSearch && total > 60 && (
-        <div className="flex justify-center gap-2 mt-6">
-          {Array.from({ length: Math.ceil(total / 60) }, (_, i) => (
-            <button key={i} onClick={() => { setPage(i + 1); window.scrollTo({ top: 0, behavior: 'smooth' }) }}
-              style={{
-                background: page === i + 1 ? 'var(--accent)' : 'var(--bg-card)',
-                border: '1px solid var(--border-color)',
-                color: page === i + 1 ? '#000' : 'var(--text-secondary)',
-                padding: '6px 14px', borderRadius: '4px', cursor: 'pointer',
-                fontSize: '13px', transition: 'background 0.15s',
-              }}>
-              {i + 1}
-            </button>
-          ))}
-        </div>
+        <Pagination current={page} total={total} pageSize={60} onChange={setPage} />
       )}
     </div>
   )

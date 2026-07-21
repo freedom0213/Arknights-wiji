@@ -117,18 +117,10 @@ export default function OperatorsPage() {
             {operators.map(op => (
               <Link
                 key={op.id} to={`/operators/${op.id}`}
-                className="no-underline p-3"
+                className="no-underline p-3 card-hover"
                 style={{
                   background: 'var(--bg-card)', border: '1px solid var(--border-color)',
-                  borderRadius: '6px', transition: 'border-color 0.2s, transform 0.15s',
-                }}
-                onMouseEnter={e => {
-                  e.currentTarget.style.borderColor = 'var(--accent)'
-                  e.currentTarget.style.transform = 'translateY(-2px)'
-                }}
-                onMouseLeave={e => {
-                  e.currentTarget.style.borderColor = 'var(--border-color)'
-                  e.currentTarget.style.transform = ''
+                  borderRadius: '6px',
                 }}
               >
                 <div style={{ color: RARITY_MAP[op.rarity]?.color || '#909090', fontSize: '12px', marginBottom: '4px' }}>

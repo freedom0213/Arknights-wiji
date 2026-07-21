@@ -24,3 +24,23 @@ body {
 ::-webkit-scrollbar { width: 6px; }
 ::-webkit-scrollbar-track { background: var(--bg-secondary); }
 ::-webkit-scrollbar-thumb { background: var(--border-color); border-radius: 3px; }
+
+/* 页面淡入动画 */
+@keyframes page-fade-in {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* 骨架屏脉冲动画（供 Skeleton 组件和全局使用） */
+@keyframes skeleton-pulse {
+  0%, 100% { opacity: 0.4; }
+  50% { opacity: 0.8; }
+}
+
+/* 输入框/按钮焦点样式 */
+input:focus, select:focus, button:focus-visible {
+  box-shadow: 0 0 0 2px rgba(78, 201, 240, 0.3);
+}
+
+/* 链接 hover 过渡 */
+a { transition: color 0.15s ease; }

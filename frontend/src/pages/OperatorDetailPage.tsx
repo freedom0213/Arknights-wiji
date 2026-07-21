@@ -2,6 +2,8 @@ import { useState, Component } from 'react'
 import { useParams, Link } from 'react-router-dom'
 import { useQuery, useQueries } from '@tanstack/react-query'
 import { fetchOperator, fetchSkill, type SkillData } from '../api/client'
+import { SkeletonDetail, SkeletonSection } from '../components/Skeleton'
+import { ErrorState } from '../components/StateView'
 
 // React Error Boundary：捕获子组件渲染错误，防止整个页面黑屏
 class ErrorBoundary extends Component<{ children: React.ReactNode }, { hasError: boolean; error: Error | null }> {
@@ -102,17 +104,21 @@ export default function OperatorDetailPage() {
 
   if (isLoading) {
     return (
-      <div style={{ display: 'flex', justifyContent: 'center', padding: '80px 0' }}>
-        <div className="loading-spinner" />
-        <span style={{ color: 'var(--text-secondary)', marginLeft: '12px' }}>加载干员数据...</span>
+      <div>
+        <Link to="/operators" style={{ color: 'var(--text-secondary)', fontSize: '14px' }}>← 返回干员列表</Link>
+        <div style={{ marginTop: '16px' }}>
+          <SkeletonDetail />
+          <div style={{ marginTop: '16px' }}><SkeletonSection rows={2} /></div>
+          <div style={{ marginTop: '16px' }}><SkeletonSection rows={2} /></div>
+        </div>
       </div>
     )
   }
   if (isError || !op) {
     return (
-      <div style={{ textAlign: 'center', padding: '80px 0' }}>
-        <p style={{ color: 'var(--danger)', fontSize: '18px' }}>加载失败</p>
-        <Link to="/operators" style={{ color: 'var(--accent)', fontSize: '14px' }}>返回干员列表</Link>
+      <div>
+        <Link to="/operators" style={{ color: 'var(--text-secondary)', fontSize: '14px' }}>← 返回干员列表</Link>
+        <ErrorState message="加载干员数据失败" onRetry={() => window.location.reload()} />
       </div>
     )
   }

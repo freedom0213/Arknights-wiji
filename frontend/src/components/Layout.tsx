@@ -51,8 +51,8 @@ export default function Layout() {
           </nav>
         </div>
       </header>
-      {/* 页面内容 */}
-      <main className="flex-1 max-w-6xl mx-auto px-4 py-6 w-full">
+      {/* 页面内容：添加淡入动画 */}
+      <main className="flex-1 max-w-6xl mx-auto px-4 py-6 w-full" style={{ animation: 'page-fade-in 0.25s ease-out' }}>
         <Outlet />
       </main>
       {/* 底部免责声明 */}

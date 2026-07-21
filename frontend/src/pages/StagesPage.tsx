@@ -1,7 +1,9 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { fetchStages, fetchZones, fetchWeeklySchedule } from '../api/client'
 import type { Stage, ScheduleDay } from '../api/client'
+import { SkeletonWeekGrid, SkeletonCardGrid } from '../components/Skeleton'
+import { ErrorState } from '../components/StateView'
 
 // 关卡类别中文名
 const ZONE_CATEGORY: Record<string, string> = {
@@ -33,11 +35,12 @@ export default function StagesPage() {
   const [total, setTotal] = useState(0)
   const [page, setPage] = useState(1)
   const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
   const [zoneFilter, setZoneFilter] = useState('')
   const [search, setSearch] = useState('')
 
   // 获取每周日程
-  const { data: scheduleData } = useQuery({
+  const { data: scheduleData, isLoading: scheduleLoading } = useQuery({
     queryKey: ['weekly-schedule'],
     queryFn: fetchWeeklySchedule,
   })
@@ -46,8 +49,9 @@ export default function StagesPage() {
   useEffect(() => { fetchZones().then(setZones) }, [])
 
   // 获取关卡列表
-  useEffect(() => {
+  const loadStages = useCallback(() => {
     setLoading(true)
+    setError(null)
     const params: Record<string, string | number> = { page, page_size: 50 }
     if (zoneFilter) params.zone_id = zoneFilter
     fetchStages(params).then(data => {
@@ -63,8 +67,13 @@ export default function StagesPage() {
       }
       setStages(items)
       setLoading(false)
+    }).catch(err => {
+      setError(err?.message || '加载失败')
+      setLoading(false)
     })
   }, [page, zoneFilter, search])
+
+  useEffect(() => { loadStages() }, [loadStages])
 
   return (
     <div>
@@ -73,7 +82,14 @@ export default function StagesPage() {
       </h1>
 
       {/* 每周日程网格 */}
-      {scheduleData && (
+      {scheduleLoading ? (
+        <div style={{
+          background: 'var(--bg-card)', border: '1px solid var(--border-color)',
+          borderRadius: '8px', padding: '24px', marginBottom: '24px',
+        }}>
+          <SkeletonWeekGrid />
+        </div>
+      ) : scheduleData && (
         <div style={{
           background: 'var(--bg-card)', border: '1px solid var(--border-color)',
           borderRadius: '8px', padding: '24px', marginBottom: '24px',
@@ -166,7 +182,13 @@ export default function StagesPage() {
 
         {/* 关卡列表 */}
         {loading ? (
-          <p style={{ color: 'var(--text-secondary)', fontSize: '14px' }}>加载中…</p>
+          <SkeletonCardGrid count={8} columns="repeat(auto-fill, minmax(300px, 1fr))" />
+        ) : error ? (
+          <ErrorState message={error} onRetry={loadStages} />
+        ) : stages.length === 0 ? (
+          <p style={{ color: 'var(--text-secondary)', fontSize: '14px', textAlign: 'center', padding: '40px 0' }}>
+            {search ? `未找到匹配 "${search}" 的关卡` : '暂无关卡数据'}
+          </p>
         ) : (
           <div className="grid gap-2" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))' }}>
             {stages.map(stage => (

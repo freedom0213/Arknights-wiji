@@ -1,16 +1,33 @@
 import { useParams, Link } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
 import { fetchEnemy } from '../api/client'
+import { SkeletonDetail } from '../components/Skeleton'
+import { ErrorState } from '../components/StateView'
 
 export default function EnemyDetailPage() {
   const { id } = useParams<{ id: string }>()
-  const { data: enemy, isLoading } = useQuery({
+  const { data: enemy, isLoading, isError, refetch } = useQuery({
     queryKey: ['enemy', id],
     queryFn: () => fetchEnemy(id!),
     enabled: !!id,
   })
 
-  if (isLoading) return <p style={{ color: 'var(--text-secondary)' }}>加载中...</p>
+  // 骨架屏
+  if (isLoading) return (
+    <div>
+      <Link to="/enemies" style={{ color: 'var(--text-secondary)', fontSize: '14px' }}>← 返回敌人列表</Link>
+      <div style={{ marginTop: '16px' }}><SkeletonDetail /></div>
+    </div>
+  )
+
+  // 错误状态
+  if (isError) return (
+    <div>
+      <Link to="/enemies" style={{ color: 'var(--text-secondary)', fontSize: '14px' }}>← 返回敌人列表</Link>
+      <ErrorState message="加载敌人数据失败" onRetry={() => refetch()} />
+    </div>
+  )
+
   if (!enemy) return <p style={{ color: 'var(--danger)' }}>敌人不存在</p>
 
   const abilityList = tryParse(enemy.abilityList)
@@ -36,14 +53,12 @@ export default function EnemyDetailPage() {
             <Tag key={t} label={t.trim()} color="var(--text-secondary)" />)}
         </div>
 
-        {/* 描述 */}
         {enemy.description && (
           <p style={{ color: 'var(--text-secondary)', fontSize: '14px', marginTop: '16px', lineHeight: 1.6 }}>
             {enemy.description}
           </p>
         )}
 
-        {/* 能力 */}
         {enemy.ability && (
           <div style={{ marginTop: '16px' }}>
             <h3 style={{ color: 'var(--text-primary)', fontSize: '14px', fontWeight: 600, marginBottom: '8px' }}>
@@ -55,7 +70,6 @@ export default function EnemyDetailPage() {
           </div>
         )}
 
-        {/* 详细能力列表 */}
         {abilityList && Array.isArray(abilityList) && abilityList.length > 0 && (
           <div style={{ marginTop: '16px' }}>
             <h3 style={{ color: 'var(--text-primary)', fontSize: '14px', fontWeight: 600, marginBottom: '8px' }}>
@@ -74,7 +88,6 @@ export default function EnemyDetailPage() {
           </div>
         )}
 
-        {/* 关联敌人 */}
         {enemy.linkEnemies && (() => {
           const links = tryParse(enemy.linkEnemies)
           if (links && Array.isArray(links) && links.length > 0) {

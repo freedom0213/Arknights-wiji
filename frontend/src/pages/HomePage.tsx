@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
 import { fetchTodayStages, searchOperators } from '../api/client'
 import type { Stage } from '../api/client'
+import { SkeletonText } from '../components/Skeleton'
 
 // 关卡类别中文名（zoneNameSecond 的后备映射）
 const ZONE_CATEGORY: Record<string, string> = {
@@ -131,10 +132,7 @@ export default function HomePage() {
         </div>
 
         {isLoading ? (
-          <div style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '20px 0' }}>
-            <div className="loading-spinner" />
-            <span style={{ color: 'var(--text-secondary)', fontSize: '14px' }}>加载中…</span>
-          </div>
+          <SkeletonText lines={3} gap="12px" />
         ) : sortedZones.length === 0 ? (
           <p style={{ color: 'var(--text-secondary)', fontSize: '14px' }}>暂无开放数据</p>
         ) : (

@@ -48,7 +48,14 @@ app.add_middleware(
 @app.get("/api/health")
 async def health_check():
     """健康检查端点：确认后端正常运行"""
-    return {"status": "ok", "version": "0.1.0"}
+    tables = reflect_tables()
+    has_char_skins = "char_skins" in tables
+    return {
+        "status": "ok",
+        "version": "0.1.0",
+        "tables": list(tables.keys()),
+        "has_char_skins": has_char_skins,
+    }
 
 
 # 注册路由

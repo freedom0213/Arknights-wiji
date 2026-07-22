@@ -9,17 +9,48 @@ SQLAlchemy 是什么？
 - 自动处理连接池、参数化查询（防 SQL 注入）
 """
 import os
+import sys
 from pathlib import Path
 
 from sqlalchemy import create_engine, MetaData, Table
 from sqlalchemy.engine import Engine
 
-# 数据库路径：优先环境变量，其次默认路径（项目根 data/ 目录）
-DB_PATH = os.environ.get(
-    "ARKNIGHTS_DB_PATH",
-    str(Path(__file__).resolve().parent.parent / "data" / "arknights.db"),
-)
+
+def _find_db_path() -> str:
+    """
+    按优先级查找数据库文件，适应不同部署环境。
+    优先级：环境变量 > git 根目录 > backend 同级目录 > backend 子目录
+    """
+    # 环境变量显式覆盖（Railway / 生产环境）
+    env_path = os.environ.get("ARKNIGHTS_DB_PATH")
+    if env_path:
+        return env_path
+
+    # 候选路径列表，按优先级排列
+    base = Path(__file__).resolve().parent  # backend/
+    candidates = [
+        base.parent / "data" / "arknights.db",   # git 根/data/arknights.db（从 git 根运行）
+        base / "data" / "arknights.db",           # backend/data/arknights.db（从 backend/ 运行）
+    ]
+
+    for p in candidates:
+        if p.exists():
+            print(f"[数据库] 找到: {p}", file=sys.stderr)
+            return str(p)
+
+    # 都不存在：默认返回第一个候选路径，让 SQLAlchemy 报清晰错误
+    default = str(candidates[0])
+    print(f"[数据库] 警告: 数据库文件未找到，尝试路径: {[str(c) for c in candidates]}", file=sys.stderr)
+    print(f"[数据库] 将使用默认路径: {default}", file=sys.stderr)
+    return default
+
+
+DB_PATH = _find_db_path()
 DATABASE_URL = f"sqlite:///{DB_PATH}"
+
+# 确保数据库文件所在目录存在（SQLite 需要在该目录下创建 WAL 日志文件）
+_db_dir = Path(DB_PATH).parent
+_db_dir.mkdir(parents=True, exist_ok=True)
 
 # 创建 SQLAlchemy 引擎
 # echo=False: 不打印 SQL 日志（调试时可设为 True）

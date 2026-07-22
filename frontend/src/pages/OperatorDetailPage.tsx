@@ -152,6 +152,8 @@ function materialsStr(cost: any, materialMap: Record<string, any>): string {
 export default function OperatorDetailPage() {
   const { id } = useParams<{ id: string }>()
   const [statPhase, setStatPhase] = useState(0)
+  const [illustMode, setIllustMode] = useState<'e0' | 'e2'>('e0')
+  const [lightbox, setLightbox] = useState(false)  // 立绘放大查看
 
   const { data: op, isLoading, isError } = useQuery({
     queryKey: ['operator', id],
@@ -216,7 +218,7 @@ export default function OperatorDetailPage() {
         返回干员列表
       </Link>
 
-      {/* 基本信息卡片 */}
+      {/* 基本信息 + 立绘 合并卡片 */}
       <div style={{
         background: 'rgba(35, 39, 70, 0.38)',
         backdropFilter: 'blur(14px) saturate(1.3)',
@@ -224,38 +226,119 @@ export default function OperatorDetailPage() {
         border: '1px solid rgba(255,255,255,0.08)',
         borderRadius: '8px', padding: '16px', marginTop: '12px',
         boxShadow: '0 4px 20px rgba(0,0,0,0.12)',
+        display: 'flex', gap: '20px', alignItems: 'flex-start',
       }}>
-        <div className="flex flex-wrap items-start gap-3 justify-between">
-          <div>
-            <div style={{ color: '#f0c060', fontSize: '12px', marginBottom: '2px' }}>
-              {'★'.repeat(stars)}
-            </div>
-            <h1 style={{ fontSize: '22px', fontWeight: 700, color: 'var(--text-primary)' }}>{op.name}</h1>
-            <p style={{ color: 'var(--text-secondary)', fontSize: '13px', marginTop: '2px' }}>
-              {op.appellation} {op.displayNumber ? `· ${op.displayNumber}` : ''}
-            </p>
-            <div className="flex flex-wrap gap-1.5 mt-2">
-              <Tag label={PROF_MAP[op.profession] || op.profession} color="var(--accent)" />
-              <Tag label={op.subProfessionId || '-'} color="var(--text-secondary)" />
-              <Tag label={op.position === 'MELEE' ? '近战位' : '远程位'} color="#a0d080" />
-              {nationName && <Tag label={String(nationName)} color="#d0a0f0" />}
-              {tagList.map((t: string) => (
-                <Tag key={String(t)} label={String(t)} color="#f0c060" />
-              ))}
-            </div>
+        {/* 左侧：基本信息（文字过长自动换行，与右侧立绘保持间距） */}
+        <div style={{ flex: 1, minWidth: 0, overflowWrap: 'break-word' }}>
+          <div style={{ color: '#f0c060', fontSize: '12px', marginBottom: '2px' }}>
+            {'★'.repeat(stars)}
           </div>
+          <h1 style={{ fontSize: '22px', fontWeight: 700, color: 'var(--text-primary)' }}>{op.name}</h1>
+          <p style={{ color: 'var(--text-secondary)', fontSize: '13px', marginTop: '2px' }}>
+            {op.appellation} {op.displayNumber ? `· ${op.displayNumber}` : ''}
+          </p>
+          <div className="flex flex-wrap gap-1.5 mt-2">
+            <Tag label={PROF_MAP[op.profession] || op.profession} color="var(--accent)" />
+            <Tag label={op.subProfessionId || '-'} color="var(--text-secondary)" />
+            <Tag label={op.position === 'MELEE' ? '近战位' : '远程位'} color="#a0d080" />
+            {nationName && <Tag label={String(nationName)} color="#d0a0f0" />}
+            {tagList.map((t: string) => (
+              <Tag key={String(t)} label={String(t)} color="#f0c060" />
+            ))}
+          </div>
+
+          {trait && (
+            <div style={{ marginTop: '10px', padding: '8px 12px', background: 'var(--bg-secondary)', borderRadius: '4px' }}>
+              <span style={{ color: 'var(--accent)', fontWeight: 600, fontSize: '12px' }}>特性：</span>
+              <span style={{ color: 'var(--text-secondary)', fontSize: '12px' }}>{trait}</span>
+            </div>
+          )}
+
+          {op.itemUsage && (
+            <p style={{ color: 'var(--text-secondary)', fontSize: '12px', marginTop: '8px', lineHeight: 1.5 }}>{op.itemUsage}</p>
+          )}
         </div>
 
-        {trait && (
-          <div style={{ marginTop: '10px', padding: '8px 12px', background: 'var(--bg-secondary)', borderRadius: '4px' }}>
-            <span style={{ color: 'var(--accent)', fontWeight: 600, fontSize: '12px' }}>特性：</span>
-            <span style={{ color: 'var(--text-secondary)', fontSize: '12px' }}>{trait}</span>
+        {/* 右侧：立绘 + 切换按钮（正方形，点击放大） */}
+        <div style={{
+          width: '220px', aspectRatio: '1/1', flexShrink: 0,
+          borderRadius: '6px', overflow: 'hidden',
+          background: 'rgba(20, 22, 40, 0.5)',
+          border: '1px solid rgba(255,255,255,0.06)',
+          position: 'relative', cursor: 'pointer',
+        }} onClick={() => {
+          // 放大查看时也使用回退链
+          const primary = illustMode === 'e0' ? op.e0IllustUrl : op.e2IllustUrl
+          const fallback = illustMode === 'e0' ? op.defaultPortraitUrl : op.e2PortraitUrl
+          const finalFallback = op.avatarUrl
+          const url = primary || fallback || finalFallback
+          if (url) setLightbox(true)
+        }}>
+          {(() => {
+            const primary = illustMode === 'e0' ? op.e0IllustUrl : op.e2IllustUrl
+            const fallback = illustMode === 'e0' ? op.defaultPortraitUrl : op.e2PortraitUrl
+            const finalFallback = op.avatarUrl
+            const src = primary || fallback || finalFallback
+            if (!src) return (
+              <div style={{ width: '100%', height: '100%', display: 'flex',
+                alignItems: 'center', justifyContent: 'center',
+                color: 'var(--text-secondary)', fontSize: '12px' }}>
+                暂无立绘
+              </div>
+            )
+            // 回退 URL 列表
+            const fallbacks = [primary, fallback, finalFallback].filter(Boolean) as string[]
+            return (
+              <img src={src} alt={`${op.name} ${illustMode === 'e0' ? '初始' : '精二'}立绘`}
+                style={{ display: 'block', width: '100%', height: '100%', objectFit: 'contain' }}
+                onError={e => {
+                  const img = e.target as HTMLImageElement
+                  const currentIdx = fallbacks.indexOf(img.src)
+                  if (currentIdx >= 0 && currentIdx < fallbacks.length - 1) {
+                    img.src = fallbacks[currentIdx + 1]  // 尝试下一个回退 URL
+                  } else {
+                    img.style.display = 'none'  // 全部失败
+                  }
+                }}
+              />
+            )
+          })()}
+          {/* hover 放大图标提示 */}
+          {op.e0IllustUrl && (
+            <div style={{
+              position: 'absolute', inset: 0,
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              background: 'rgba(0,0,0,0)', transition: 'background 0.2s',
+              opacity: 0,
+            }} className="illust-hover-zone">
+              <span style={{
+                color: '#fff', fontSize: '28px',
+                textShadow: '0 0 12px rgba(0,0,0,0.6)',
+                opacity: 0, transform: 'scale(0.8)', transition: 'all 0.2s',
+              }}>⊕</span>
+            </div>
+          )}
+          {/* 切换按钮：右下角浮层，阻止冒泡 */}
+          <div style={{
+            position: 'absolute', bottom: '4px', right: '4px',
+            display: 'flex', gap: '2px',
+          }} onClick={e => e.stopPropagation()}>
+            <button onClick={() => setIllustMode('e0')} style={{
+              padding: '1px 7px', borderRadius: '3px', border: '1px solid rgba(255,255,255,0.15)',
+              fontSize: '10px', cursor: 'pointer', lineHeight: '16px',
+              background: illustMode === 'e0' ? 'rgba(106,182,222,0.85)' : 'rgba(0,0,0,0.5)',
+              color: illustMode === 'e0' ? '#0f1225' : 'rgba(255,255,255,0.7)',
+              backdropFilter: 'blur(4px)', transition: 'all 0.2s',
+            }}>初始</button>
+            <button onClick={() => setIllustMode('e2')} style={{
+              padding: '1px 7px', borderRadius: '3px', border: '1px solid rgba(255,255,255,0.15)',
+              fontSize: '10px', cursor: 'pointer', lineHeight: '16px',
+              background: illustMode === 'e2' ? 'rgba(106,182,222,0.85)' : 'rgba(0,0,0,0.5)',
+              color: illustMode === 'e2' ? '#0f1225' : 'rgba(255,255,255,0.7)',
+              backdropFilter: 'blur(4px)', transition: 'all 0.2s',
+            }}>精二</button>
           </div>
-        )}
-
-        {op.itemUsage && (
-          <p style={{ color: 'var(--text-secondary)', fontSize: '12px', marginTop: '8px', lineHeight: 1.5 }}>{op.itemUsage}</p>
-        )}
+        </div>
       </div>
 
       {/* 属性面板（按精英阶段切换） */}
@@ -387,6 +470,32 @@ export default function OperatorDetailPage() {
         </Section>
       )}
     </div>
+
+    {/* 立绘放大 lightbox */}
+    {lightbox && (() => {
+      const url = illustMode === 'e0' ? op.e0IllustUrl : op.e2IllustUrl
+      return url ? (
+        <div style={{
+          position: 'fixed', inset: 0, zIndex: 9999,
+          background: 'rgba(0,0,0,0.85)',
+          backdropFilter: 'blur(8px)',
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          cursor: 'zoom-out',
+        }} onClick={() => setLightbox(false)}>
+          <img src={url} alt={op.name}
+            style={{ maxWidth: '90vw', maxHeight: '90vh', objectFit: 'contain' }}
+            onClick={e => e.stopPropagation()}
+          />
+          <button onClick={() => setLightbox(false)} style={{
+            position: 'absolute', top: '16px', right: '24px',
+            background: 'rgba(255,255,255,0.1)', border: '1px solid rgba(255,255,255,0.2)',
+            color: '#fff', fontSize: '22px', width: '36px', height: '36px',
+            borderRadius: '50%', cursor: 'pointer', display: 'flex',
+            alignItems: 'center', justifyContent: 'center',
+          }}>×</button>
+        </div>
+      ) : null
+    })()}
     </ErrorBoundary>
   )
 }

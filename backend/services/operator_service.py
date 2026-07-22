@@ -9,6 +9,7 @@ from sqlalchemy import select, text
 from sqlalchemy.engine import Engine
 
 from database import engine, get_table
+from services.skin_service import get_operator_images
 
 
 def list_operators(
@@ -69,11 +70,21 @@ def list_operators(
     with engine.connect() as conn:
         rows = conn.execute(stmt).mappings().all()
 
+    items = [_row_to_dict(r) for r in rows]
+
+    # 批量附加图片 URL
+    for item in items:
+        try:
+            img_urls = get_operator_images(item.get("id", ""))
+            item["defaultPortraitUrl"] = img_urls.get("defaultPortraitUrl")
+        except Exception:
+            item["defaultPortraitUrl"] = None
+
     return {
         "total": total,
         "page": page,
         "page_size": page_size,
-        "items": [_row_to_dict(r) for r in rows],
+        "items": items,
     }
 
 
@@ -88,7 +99,14 @@ def get_operator_by_id(operator_id: str) -> dict[str, Any] | None:
     stmt = select(table).where(table.c.id == operator_id)
     with engine.connect() as conn:
         row = conn.execute(stmt).mappings().first()
-    return _row_to_dict(row) if row else None
+    result = _row_to_dict(row) if row else None
+    if result:
+        try:
+            img_urls = get_operator_images(result.get("id", ""))
+            result.update(img_urls)
+        except Exception:
+            pass
+    return result
 
 
 def search_operators(query: str, limit: int = 20) -> list[dict[str, Any]]:

@@ -113,7 +113,7 @@ export default function OperatorsPage() {
       </div>
 
       {/* 加载中 */}
-      {loading && <SkeletonCardGrid count={12} />}
+      {loading && <SkeletonCardGrid count={12} columns="repeat(3, 1fr)" />}
 
       {/* 错误 */}
       {!loading && error && <ErrorState message={error} onRetry={loadData} />}
@@ -134,25 +134,74 @@ export default function OperatorsPage() {
               className="no-underline card-hover"
               style={{
                 background: 'var(--bg-card)', border: '1px solid var(--border-color)',
-                borderRadius: '8px', padding: '16px',
-                display: 'flex', flexDirection: 'column', gap: '6px',
+                borderRadius: '8px', padding: '12px',
+                display: 'flex', gap: '12px', alignItems: 'center',
               }}
             >
-              <div style={{ color: RARITY_MAP[op.rarity]?.color || '#909090', fontSize: '13px' }}>
-                {'★'.repeat(RARITY_MAP[op.rarity]?.stars || 1)}
+              {/* 左侧文字信息 */}
+              <div style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                <div style={{ color: RARITY_MAP[op.rarity]?.color || '#909090', fontSize: '12px' }}>
+                  {'★'.repeat(RARITY_MAP[op.rarity]?.stars || 1)}
+                </div>
+                <div style={{ color: 'var(--text-primary)', fontWeight: 700, fontSize: '16px' }}>{op.name}</div>
+                <div style={{ color: 'var(--text-secondary)', fontSize: '12px' }}>
+                  {PROF_MAP[op.profession] || op.profession}
+                  {op.subProfessionId ? ` · ${op.subProfessionId}` : ''}
+                </div>
+                <div style={{ color: 'var(--text-secondary)', fontSize: '10px', opacity: 0.75 }}>
+                  {op.position === 'MELEE' ? '近战位' : '远程位'}
+                  {op.nationId ? ` · ${NATION_MAP[op.nationId.toLowerCase()] || op.nationId}` : ''}
+                </div>
               </div>
-              <div style={{ color: 'var(--text-primary)', fontWeight: 700, fontSize: '17px' }}>{op.name}</div>
-              <div style={{ color: 'var(--text-secondary)', fontSize: '13px' }}>
-                {PROF_MAP[op.profession] || op.profession}
-                {op.subProfessionId ? ` · ${op.subProfessionId}` : ''}
-              </div>
-              <div style={{ color: 'var(--text-secondary)', fontSize: '11px', opacity: 0.75 }}>
-                {op.position === 'MELEE' ? '近战位' : '远程位'}
-                {op.nationId ? ` · ${NATION_MAP[op.nationId.toLowerCase()] || op.nationId}` : ''}
+              {/* 右侧半身像 */}
+              <div style={{
+                width: '72px', height: '72px', flexShrink: 0,
+                borderRadius: '6px', overflow: 'hidden',
+                background: 'rgba(35,39,70,0.3)',
+                border: '1px solid rgba(255,255,255,0.06)',
+              }}>
+                {(() => {
+                  const imgSrc = op.defaultPortraitUrl || op.avatarUrl
+                  const fallbackSrc = op.defaultPortraitUrl && op.avatarUrl ? op.avatarUrl : null
+                  return imgSrc ? (
+                    <img src={imgSrc} alt={op.name}
+                      className="portrait-img"
+                      style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'top center' }}
+                      loading="lazy"
+                      onError={e => {
+                        const img = e.target as HTMLImageElement
+                        if (fallbackSrc && img.src !== fallbackSrc) {
+                          img.src = fallbackSrc  // 半身像失败回退到头像
+                        } else {
+                          img.style.display = 'none'
+                        }
+                      }}
+                    />
+                  ) : (
+                    <div style={{
+                      width: '100%', height: '100%', display: 'flex',
+                      alignItems: 'center', justifyContent: 'center',
+                      color: 'var(--text-secondary)', fontSize: '10px',
+                    }}>暂无</div>
+                  )
+                })()}
               </div>
             </Link>
           ))}
         </div>
+      )}
+
+      {/* 图片来源说明 */}
+      {!loading && !error && operators.length > 0 && (
+        <p style={{
+          textAlign: 'center', color: 'var(--text-secondary)',
+          fontSize: '11px', marginTop: '16px', opacity: 0.55,
+        }}>
+          ※ 干员立绘来源于社区资源仓库（<a href="https://github.com/yuanyan3060/ArknightsGameResource"
+            target="_blank" rel="noopener"
+            style={{ color: 'var(--accent)', opacity: 0.7 }}>ArknightsGameResource</a>），
+          部分新干员资源尚未收录，暂以头像替代。
+        </p>
       )}
 
       {/* 分页 */}

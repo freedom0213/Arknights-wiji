@@ -14,10 +14,10 @@ from pathlib import Path
 from sqlalchemy import create_engine, MetaData, Table
 from sqlalchemy.engine import Engine
 
-# 数据库路径：优先环境变量，其次默认路径
+# 数据库路径：优先环境变量，其次默认路径（项目根 data/ 目录）
 DB_PATH = os.environ.get(
     "ARKNIGHTS_DB_PATH",
-    str(Path(__file__).resolve().parent / "data" / "arknights.db"),
+    str(Path(__file__).resolve().parent.parent / "data" / "arknights.db"),
 )
 DATABASE_URL = f"sqlite:///{DB_PATH}"
 

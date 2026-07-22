@@ -15,6 +15,12 @@ export interface Operator {
   talents: string; potentialRanks: string; favorKeyFrames: string
   allSkillLvlup: string; displayNumber: string; nationId: string
   description: string; itemUsage: string; itemDesc: string
+  // 图片 URL（由后端 skin_service 拼接免费 CDN）
+  avatarUrl?: string
+  defaultPortraitUrl?: string
+  e2PortraitUrl?: string
+  e0IllustUrl?: string
+  e2IllustUrl?: string
 }
 
 export interface OperatorListResponse {
@@ -44,6 +50,8 @@ export interface Enemy {
   id: string; name: string; enemyLevel: string; enemyTags: string
   attackType: string; ability: string; description: string
   abilityList: string; linkEnemies: string; damageType: string
+  // 敌人图片 URL（免费 CDN）
+  imageUrl?: string
 }
 
 export interface EnemyListResponse {

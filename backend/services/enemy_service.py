@@ -7,6 +7,7 @@ from sqlalchemy import select, text
 from sqlalchemy.engine import Engine
 
 from database import engine, get_table, reflect_tables
+from services.skin_service import get_enemy_image_url
 
 
 def list_enemies(
@@ -47,11 +48,16 @@ def list_enemies(
     with engine.connect() as conn:
         rows = conn.execute(stmt).mappings().all()
 
+    items = [_row_to_dict(r) for r in rows]
+    # 批量附加敌人图片 URL
+    for item in items:
+        enemy_id = item.get("enemyId") or item.get("id", "")
+        item["imageUrl"] = get_enemy_image_url(enemy_id)
     return {
         "total": total,
         "page": page,
         "page_size": page_size,
-        "items": [_row_to_dict(r) for r in rows],
+        "items": items,
     }
 
 
@@ -66,7 +72,11 @@ def get_enemy_by_id(enemy_id: str) -> dict[str, Any] | None:
     stmt = select(table).where(table.c.id == str(enemy_id))
     with engine.connect() as conn:
         row = conn.execute(stmt).mappings().first()
-    return _row_to_dict(row) if row else None
+    result = _row_to_dict(row) if row else None
+    if result:
+        eid = result.get("enemyId") or result.get("id", "")
+        result["imageUrl"] = get_enemy_image_url(eid)
+    return result
 
 
 def search_enemies(query: str, limit: int = 20) -> list[dict[str, Any]]:

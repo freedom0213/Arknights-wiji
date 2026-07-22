@@ -36,6 +36,7 @@ function formatAttrValue(key: string, value: any): string {
 export default function EnemyDetailPage() {
   const { id } = useParams<{ id: string }>()
   const [activeLevel, setActiveLevel] = useState(0)
+  const [lightbox, setLightbox] = useState(false)  // 立绘放大查看
 
   const { data: enemy, isLoading, isError, refetch } = useQuery({
     queryKey: ['enemy', id],
@@ -75,29 +76,75 @@ export default function EnemyDetailPage() {
     <div>
       <Link to="/enemies" style={{ color: 'var(--text-secondary)', fontSize: '14px' }}>← 返回敌人列表</Link>
 
-      {/* 基本信息 */}
+      {/* 基本信息 + 图片 合并卡片 */}
       <div style={{
-        background: 'var(--bg-card)', border: '1px solid var(--border-color)',
-        borderRadius: '8px', padding: '24px', marginTop: '16px',
+        background: 'rgba(35, 39, 70, 0.38)',
+        backdropFilter: 'blur(14px) saturate(1.3)',
+        WebkitBackdropFilter: 'blur(14px) saturate(1.3)',
+        border: '1px solid rgba(255,255,255,0.08)',
+        borderRadius: '8px', padding: '16px', marginTop: '12px',
+        boxShadow: '0 4px 20px rgba(0,0,0,0.12)',
+        display: 'flex', gap: '20px', alignItems: 'flex-start',
       }}>
-        <h1 style={{ fontSize: '28px', fontWeight: 700, color: 'var(--text-primary)' }}>
-          {enemy.name}
-        </h1>
-        <div className="flex flex-wrap gap-2 mt-3">
-          <Tag label={enemy.enemyLevel === 'BOSS' ? 'Boss' : enemy.enemyLevel === 'ELITE' ? '精英' : '普通'}
-            color={enemy.enemyLevel === 'BOSS' ? 'var(--danger)' :
-                   enemy.enemyLevel === 'ELITE' ? 'var(--accent-gold)' : 'var(--text-secondary)'} />
-          {enemy.attackType && <Tag label={`攻击方式: ${enemy.attackType}`} color="var(--accent)" />}
-          {enemy.damageType && <Tag label={`伤害类型: ${enemy.damageType}`} color="var(--accent)" />}
-          {enemy.enemyTags && enemy.enemyTags.split(',').map((t: string) =>
-            <Tag key={t} label={t.trim()} color="var(--text-secondary)" />)}
+        {/* 左侧：基本信息 */}
+        <div style={{ flex: 1, minWidth: 0, overflowWrap: 'break-word' }}>
+          <h1 style={{ fontSize: '22px', fontWeight: 700, color: 'var(--text-primary)', marginBottom: '8px' }}>
+            {enemy.name}
+          </h1>
+          <div className="flex flex-wrap gap-1.5 mb-2">
+            <Tag label={enemy.enemyLevel === 'BOSS' ? 'Boss' : enemy.enemyLevel === 'ELITE' ? '精英' : '普通'}
+              color={enemy.enemyLevel === 'BOSS' ? 'var(--danger)' :
+                     enemy.enemyLevel === 'ELITE' ? 'var(--accent-gold)' : 'var(--text-secondary)'} />
+            {enemy.attackType && <Tag label={`攻击方式: ${enemy.attackType}`} color="var(--accent)" />}
+            {enemy.damageType && <Tag label={`伤害类型: ${enemy.damageType}`} color="var(--accent)" />}
+            {enemy.enemyTags && enemy.enemyTags.split(',').map((t: string) =>
+              <Tag key={t} label={t.trim()} color="var(--text-secondary)" />)}
+          </div>
+
+          {enemy.description && (
+            <p style={{ color: 'var(--text-secondary)', fontSize: '13px', lineHeight: 1.5 }}>
+              {enemy.description}
+            </p>
+          )}
         </div>
 
-        {enemy.description && (
-          <p style={{ color: 'var(--text-secondary)', fontSize: '14px', marginTop: '16px', lineHeight: 1.6 }}>
-            {enemy.description}
-          </p>
-        )}
+        {/* 右侧：敌人图片（正方形，hover放大） */}
+        <div style={{
+          width: '220px', aspectRatio: '1/1', flexShrink: 0,
+          borderRadius: '6px', overflow: 'hidden',
+          background: 'rgba(20, 22, 40, 0.5)',
+          border: '1px solid rgba(255,255,255,0.06)',
+          position: 'relative',
+          cursor: enemy.imageUrl ? 'pointer' : 'default',
+        }} onClick={() => { if (enemy.imageUrl) setLightbox(true) }}>
+          {enemy.imageUrl ? (
+            <img src={enemy.imageUrl} alt={enemy.name}
+              className="enemy-img"
+              style={{ display: 'block', width: '100%', height: '100%', objectFit: 'contain' }}
+              onError={e => { (e.target as HTMLImageElement).style.display = 'none' }}
+            />
+          ) : (
+            <div style={{ width: '100%', height: '100%', display: 'flex',
+              alignItems: 'center', justifyContent: 'center',
+              color: 'var(--text-secondary)', fontSize: '12px' }}>
+              暂无图片
+            </div>
+          )}
+          {/* hover 放大图标提示 */}
+          {enemy.imageUrl && (
+            <div className="illust-hover-zone" style={{
+              position: 'absolute', inset: 0,
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              opacity: 0, transition: 'all 0.2s',
+            }}>
+              <span style={{
+                color: '#fff', fontSize: '28px',
+                textShadow: '0 0 12px rgba(0,0,0,0.6)',
+                opacity: 0, transform: 'scale(0.8)', transition: 'all 0.2s',
+              }}>⊕</span>
+            </div>
+          )}
+        </div>
       </div>
 
       {/* 属性面板 */}
@@ -220,6 +267,30 @@ export default function EnemyDetailPage() {
         }
         return null
       })()}
+
+      {/* 图片放大 lightbox */}
+      {lightbox && enemy.imageUrl && (
+        <div style={{
+          position: 'fixed', inset: 0, zIndex: 9999,
+          background: 'rgba(0,0,0,0.85)',
+          backdropFilter: 'blur(8px)',
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          cursor: 'zoom-out',
+        }} onClick={() => setLightbox(false)}>
+          <img src={enemy.imageUrl} alt={enemy.name}
+            className="enemy-img"
+            style={{ maxWidth: '90vw', maxHeight: '90vh', objectFit: 'contain' }}
+            onClick={e => e.stopPropagation()}
+          />
+          <button onClick={() => setLightbox(false)} style={{
+            position: 'absolute', top: '16px', right: '24px',
+            background: 'rgba(255,255,255,0.1)', border: '1px solid rgba(255,255,255,0.2)',
+            color: '#fff', fontSize: '22px', width: '36px', height: '36px',
+            borderRadius: '50%', cursor: 'pointer', display: 'flex',
+            alignItems: 'center', justifyContent: 'center',
+          }}>×</button>
+        </div>
+      )}
     </div>
   )
 }

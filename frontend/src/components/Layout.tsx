@@ -83,7 +83,11 @@ export default function Layout() {
         color: 'var(--text-secondary)',
         fontSize: '12px',
       }}>
-        <p>数据来源: Kengxxiao/ArknightsGameData (GitHub)</p>
+        <p>Made by freedom · <a href="https://github.com/freedom0213" target="_blank" rel="noopener"
+          style={{ color: 'var(--accent)', opacity: 0.7 }}>GitHub</a>
+          · <a href="mailto:926049197@qq.com"
+          style={{ color: 'var(--accent)', opacity: 0.7 }}>926049197@qq.com</a></p>
+        <p style={{ marginTop: '4px' }}>数据来源: Kengxxiao/ArknightsGameData (GitHub)</p>
         <p>ArkWiji 为非官方应用，游戏数据版权归鹰角网络所有</p>
       </footer>
     </div>

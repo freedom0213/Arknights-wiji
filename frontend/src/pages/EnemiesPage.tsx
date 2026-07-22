@@ -85,7 +85,7 @@ export default function EnemiesPage() {
       </div>
 
       {/* 加载中 */}
-      {loading && <SkeletonCardGrid count={12} columns="repeat(auto-fill, minmax(240px, 1fr))" />}
+      {loading && <SkeletonCardGrid count={12} columns="repeat(3, 1fr)" />}
 
       {/* 错误 */}
       {!loading && error && <ErrorState message={error} onRetry={loadData} />}
@@ -105,40 +105,75 @@ export default function EnemiesPage() {
               className="no-underline card-hover"
               style={{
                 background: 'var(--bg-card)', border: '1px solid var(--border-color)',
-                borderRadius: '8px', padding: '16px',
-                display: 'flex', flexDirection: 'column', gap: '6px',
+                borderRadius: '8px', padding: '12px',
+                display: 'flex', gap: '12px', alignItems: 'center',
               }}
             >
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <span style={{
-                  fontSize: '11px', padding: '2px 10px', borderRadius: '4px', fontWeight: 500,
-                  background: enemy.enemyLevel === 'BOSS' ? 'rgba(224,80,80,0.2)' :
-                    enemy.enemyLevel === 'ELITE' ? 'rgba(240,192,96,0.2)' : 'rgba(144,144,176,0.2)',
-                  color: enemy.enemyLevel === 'BOSS' ? 'var(--danger)' :
-                    enemy.enemyLevel === 'ELITE' ? 'var(--accent-gold)' : 'var(--text-secondary)',
-                }}>
-                  {LEVEL_LABEL[enemy.enemyLevel] || enemy.enemyLevel}
-                </span>
-                {enemy.attackType && (
-                  <span style={{ color: 'var(--text-secondary)', fontSize: '12px' }}>{enemy.attackType}</span>
-                )}
-                {enemy.damageType && (
-                  <span style={{ color: 'var(--text-secondary)', fontSize: '11px', opacity: 0.7 }}>{enemy.damageType}</span>
+              {/* 左侧文字信息 */}
+              <div style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                  <span style={{
+                    fontSize: '10px', padding: '2px 8px', borderRadius: '3px', fontWeight: 500,
+                    background: enemy.enemyLevel === 'BOSS' ? 'rgba(224,80,80,0.2)' :
+                      enemy.enemyLevel === 'ELITE' ? 'rgba(240,192,96,0.2)' : 'rgba(144,144,176,0.2)',
+                    color: enemy.enemyLevel === 'BOSS' ? 'var(--danger)' :
+                      enemy.enemyLevel === 'ELITE' ? 'var(--accent-gold)' : 'var(--text-secondary)',
+                  }}>
+                    {LEVEL_LABEL[enemy.enemyLevel] || enemy.enemyLevel}
+                  </span>
+                  {enemy.attackType && (
+                    <span style={{ color: 'var(--text-secondary)', fontSize: '11px' }}>{enemy.attackType}</span>
+                  )}
+                </div>
+                <div style={{ color: 'var(--text-primary)', fontWeight: 700, fontSize: '16px' }}>{enemy.name}</div>
+                {enemy.ability && (
+                  <div style={{
+                    color: 'var(--text-secondary)', fontSize: '11px', lineHeight: 1.4,
+                    overflow: 'hidden', textOverflow: 'ellipsis',
+                    display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical',
+                  }}>
+                    {enemy.ability}
+                  </div>
                 )}
               </div>
-              <div style={{ color: 'var(--text-primary)', fontWeight: 700, fontSize: '17px' }}>{enemy.name}</div>
-              {enemy.ability && (
-                <div style={{
-                  color: 'var(--text-secondary)', fontSize: '12px', lineHeight: 1.4,
-                  overflow: 'hidden', textOverflow: 'ellipsis',
-                  display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical',
-                }}>
-                  {enemy.ability}
-                </div>
-              )}
+              {/* 右侧敌人图片 */}
+              <div style={{
+                width: '72px', height: '72px', flexShrink: 0,
+                borderRadius: '6px', overflow: 'hidden',
+                background: 'rgba(35,39,70,0.3)',
+                border: '1px solid rgba(255,255,255,0.06)',
+              }}>
+                {enemy.imageUrl ? (
+                  <img src={enemy.imageUrl} alt={enemy.name}
+                    className="enemy-img"
+                    style={{ width: '100%', height: '100%', objectFit: 'contain' }}
+                    loading="lazy"
+                    onError={e => { (e.target as HTMLImageElement).style.display = 'none' }}
+                  />
+                ) : (
+                  <div style={{
+                    width: '100%', height: '100%', display: 'flex',
+                    alignItems: 'center', justifyContent: 'center',
+                    color: 'var(--text-secondary)', fontSize: '10px',
+                  }}>无图</div>
+                )}
+              </div>
             </Link>
           ))}
         </div>
+      )}
+
+      {/* 图片来源说明 */}
+      {!loading && !error && enemies.length > 0 && (
+        <p style={{
+          textAlign: 'center', color: 'var(--text-secondary)',
+          fontSize: '11px', marginTop: '16px', opacity: 0.55,
+        }}>
+          ※ 敌人图片来源于社区资源仓库（<a href="https://github.com/yuanyan3060/ArknightsGameResource"
+            target="_blank" rel="noopener"
+            style={{ color: 'var(--accent)', opacity: 0.7 }}>ArknightsGameResource</a>），
+          部分新敌人资源尚未收录。
+        </p>
       )}
 
       {/* 分页 */}

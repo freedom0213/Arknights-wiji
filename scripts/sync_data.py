@@ -46,6 +46,8 @@ FILE_DEFS = [
     ("zh_CN/gamedata/levels/enemydata/enemy_database.json", "enemy_database", "enemies", "list"),
     # 基建数据: 全局配置，单行存储
     ("zh_CN/gamedata/excel/building_data.json", "building_config", None, "config"),
+    # 皮肤数据: {skinKey: {charId, avatarId, portraitId, illustId, ...}}
+    ("zh_CN/gamedata/excel/skin_table.json", "char_skins", "charSkins", "sub"),
 ]
 
 

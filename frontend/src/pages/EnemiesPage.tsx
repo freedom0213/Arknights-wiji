@@ -97,21 +97,21 @@ export default function EnemiesPage() {
 
       {/* 敌人网格 */}
       {!loading && !error && enemies.length > 0 && (
-        <div className="grid gap-2" style={{
-          gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))',
-          justifyContent: 'center',
+        <div className="grid gap-3" style={{
+          gridTemplateColumns: 'repeat(3, 1fr)',
         }}>
           {enemies.map(enemy => (
             <Link key={enemy.id} to={`/enemies/${enemy.id}`}
-              className="no-underline p-3 card-hover"
+              className="no-underline card-hover"
               style={{
                 background: 'var(--bg-card)', border: '1px solid var(--border-color)',
-                borderRadius: '6px',
+                borderRadius: '8px', padding: '16px',
+                display: 'flex', flexDirection: 'column', gap: '6px',
               }}
             >
-              <div className="flex items-center gap-2 mb-1">
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                 <span style={{
-                  fontSize: '11px', padding: '1px 8px', borderRadius: '3px',
+                  fontSize: '11px', padding: '2px 10px', borderRadius: '4px', fontWeight: 500,
                   background: enemy.enemyLevel === 'BOSS' ? 'rgba(224,80,80,0.2)' :
                     enemy.enemyLevel === 'ELITE' ? 'rgba(240,192,96,0.2)' : 'rgba(144,144,176,0.2)',
                   color: enemy.enemyLevel === 'BOSS' ? 'var(--danger)' :
@@ -120,14 +120,18 @@ export default function EnemiesPage() {
                   {LEVEL_LABEL[enemy.enemyLevel] || enemy.enemyLevel}
                 </span>
                 {enemy.attackType && (
-                  <span style={{ color: 'var(--text-secondary)', fontSize: '11px' }}>{enemy.attackType}</span>
+                  <span style={{ color: 'var(--text-secondary)', fontSize: '12px' }}>{enemy.attackType}</span>
+                )}
+                {enemy.damageType && (
+                  <span style={{ color: 'var(--text-secondary)', fontSize: '11px', opacity: 0.7 }}>{enemy.damageType}</span>
                 )}
               </div>
-              <div style={{ color: 'var(--text-primary)', fontWeight: 600, fontSize: '15px' }}>{enemy.name}</div>
+              <div style={{ color: 'var(--text-primary)', fontWeight: 700, fontSize: '17px' }}>{enemy.name}</div>
               {enemy.ability && (
                 <div style={{
-                  color: 'var(--text-secondary)', fontSize: '12px', marginTop: '4px',
-                  overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
+                  color: 'var(--text-secondary)', fontSize: '12px', lineHeight: 1.4,
+                  overflow: 'hidden', textOverflow: 'ellipsis',
+                  display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical',
                 }}>
                   {enemy.ability}
                 </div>

@@ -16,6 +16,16 @@ const RARITY_MAP: Record<string, { stars: number; color: string }> = {
   TIER_4: { stars: 4, color: '#c0a0f0' }, TIER_3: { stars: 3, color: '#80c8f0' },
   TIER_2: { stars: 2, color: '#80c080' }, TIER_1: { stars: 1, color: '#909090' },
 }
+const NATION_MAP: Record<string, string> = {
+  rhodes: '罗德岛', yan: '炎', kjerag: '谢拉格', ursus: '乌萨斯',
+  victoria: '维多利亚', siracusa: '叙拉古', laterano: '拉特兰',
+  kazimierz: '卡西米尔', leithanien: '莱塔尼亚', sargon: '萨尔贡',
+  bolivar: '玻利瓦尔', columbia: '哥伦比亚',
+  rim: '雷姆必拓', minos: '米诺斯', higashi: '东', sami: '萨米',
+  ib: '伊比利亚', egir: '阿戈尔', lungmen: '龙门',
+  kazdel: '卡兹戴尔', dublinn: '深池', rhine: '莱茵生命',
+  penguin: '企鹅物流', blacksteel: '黑钢', abyssal: '深海猎人',
+}
 
 export default function OperatorsPage() {
   const [operators, setOperators] = useState<Operator[]>([])
@@ -115,26 +125,30 @@ export default function OperatorsPage() {
 
       {/* 干员网格 */}
       {!loading && !error && operators.length > 0 && (
-        <div className="grid gap-2" style={{
-          gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
-          justifyContent: 'center',
+        <div className="grid gap-3" style={{
+          gridTemplateColumns: 'repeat(3, 1fr)',
         }}>
           {operators.map(op => (
             <Link
               key={op.id} to={`/operators/${op.id}`}
-              className="no-underline p-3 card-hover"
+              className="no-underline card-hover"
               style={{
                 background: 'var(--bg-card)', border: '1px solid var(--border-color)',
-                borderRadius: '6px',
+                borderRadius: '8px', padding: '16px',
+                display: 'flex', flexDirection: 'column', gap: '6px',
               }}
             >
-              <div style={{ color: RARITY_MAP[op.rarity]?.color || '#909090', fontSize: '12px', marginBottom: '4px' }}>
+              <div style={{ color: RARITY_MAP[op.rarity]?.color || '#909090', fontSize: '13px' }}>
                 {'★'.repeat(RARITY_MAP[op.rarity]?.stars || 1)}
               </div>
-              <div style={{ color: 'var(--text-primary)', fontWeight: 600, fontSize: '15px' }}>{op.name}</div>
-              <div style={{ color: 'var(--text-secondary)', fontSize: '12px', marginTop: '2px' }}>
+              <div style={{ color: 'var(--text-primary)', fontWeight: 700, fontSize: '17px' }}>{op.name}</div>
+              <div style={{ color: 'var(--text-secondary)', fontSize: '13px' }}>
                 {PROF_MAP[op.profession] || op.profession}
                 {op.subProfessionId ? ` · ${op.subProfessionId}` : ''}
+              </div>
+              <div style={{ color: 'var(--text-secondary)', fontSize: '11px', opacity: 0.75 }}>
+                {op.position === 'MELEE' ? '近战位' : '远程位'}
+                {op.nationId ? ` · ${NATION_MAP[op.nationId.toLowerCase()] || op.nationId}` : ''}
               </div>
             </Link>
           ))}

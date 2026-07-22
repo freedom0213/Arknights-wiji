@@ -217,17 +217,24 @@ export default function OperatorDetailPage() {
       </Link>
 
       {/* 基本信息卡片 */}
-      <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border-color)', borderRadius: '8px', padding: '24px', marginTop: '16px' }}>
-        <div className="flex flex-wrap items-start gap-4 justify-between">
+      <div style={{
+        background: 'rgba(35, 39, 70, 0.38)',
+        backdropFilter: 'blur(14px) saturate(1.3)',
+        WebkitBackdropFilter: 'blur(14px) saturate(1.3)',
+        border: '1px solid rgba(255,255,255,0.08)',
+        borderRadius: '8px', padding: '16px', marginTop: '12px',
+        boxShadow: '0 4px 20px rgba(0,0,0,0.12)',
+      }}>
+        <div className="flex flex-wrap items-start gap-3 justify-between">
           <div>
-            <div style={{ color: '#f0c060', fontSize: '14px', marginBottom: '4px' }}>
+            <div style={{ color: '#f0c060', fontSize: '12px', marginBottom: '2px' }}>
               {'★'.repeat(stars)}
             </div>
-            <h1 style={{ fontSize: '28px', fontWeight: 700, color: 'var(--text-primary)' }}>{op.name}</h1>
-            <p style={{ color: 'var(--text-secondary)', fontSize: '14px', marginTop: '4px' }}>
+            <h1 style={{ fontSize: '22px', fontWeight: 700, color: 'var(--text-primary)' }}>{op.name}</h1>
+            <p style={{ color: 'var(--text-secondary)', fontSize: '13px', marginTop: '2px' }}>
               {op.appellation} {op.displayNumber ? `· ${op.displayNumber}` : ''}
             </p>
-            <div className="flex flex-wrap gap-2 mt-3">
+            <div className="flex flex-wrap gap-1.5 mt-2">
               <Tag label={PROF_MAP[op.profession] || op.profession} color="var(--accent)" />
               <Tag label={op.subProfessionId || '-'} color="var(--text-secondary)" />
               <Tag label={op.position === 'MELEE' ? '近战位' : '远程位'} color="#a0d080" />
@@ -240,30 +247,30 @@ export default function OperatorDetailPage() {
         </div>
 
         {trait && (
-          <div style={{ marginTop: '16px', padding: '12px', background: 'var(--bg-secondary)', borderRadius: '6px' }}>
-            <span style={{ color: 'var(--accent)', fontWeight: 600, fontSize: '13px' }}>特性：</span>
-            <span style={{ color: 'var(--text-secondary)', fontSize: '13px' }}>{trait}</span>
+          <div style={{ marginTop: '10px', padding: '8px 12px', background: 'var(--bg-secondary)', borderRadius: '4px' }}>
+            <span style={{ color: 'var(--accent)', fontWeight: 600, fontSize: '12px' }}>特性：</span>
+            <span style={{ color: 'var(--text-secondary)', fontSize: '12px' }}>{trait}</span>
           </div>
         )}
 
         {op.itemUsage && (
-          <p style={{ color: 'var(--text-secondary)', fontSize: '13px', marginTop: '12px', lineHeight: 1.6 }}>{op.itemUsage}</p>
+          <p style={{ color: 'var(--text-secondary)', fontSize: '12px', marginTop: '8px', lineHeight: 1.5 }}>{op.itemUsage}</p>
         )}
       </div>
 
       {/* 属性面板（按精英阶段切换） */}
       {phases.length > 0 && (
         <Section title="基础属性">
-          <div className="flex gap-2" style={{ marginBottom: '16px' }}>
+          <div className="flex gap-1.5" style={{ marginBottom: '10px' }}>
             {phases.map((p: any, i: number) => (
               <button
                 key={i}
                 onClick={() => setStatPhase(i)}
                 style={{
-                  padding: '6px 16px', borderRadius: '6px', border: '1px solid var(--border-color)',
+                  padding: '4px 12px', borderRadius: '4px', border: '1px solid var(--border-color)',
                   background: statPhase === i ? 'var(--accent)' : 'transparent',
                   color: statPhase === i ? '#000' : 'var(--text-secondary)',
-                  cursor: 'pointer', fontSize: '13px', fontWeight: statPhase === i ? 600 : 400,
+                  cursor: 'pointer', fontSize: '12px', fontWeight: statPhase === i ? 600 : 400,
                 }}
               >
                 {i === 0 ? '精英0' : `精英${i}`} Lv.{p?.maxLevel || '?'}
@@ -278,7 +285,7 @@ export default function OperatorDetailPage() {
             const maxAttrs = attrs[attrs.length - 1]?.data || attrs[0]?.data
             if (!maxAttrs || typeof maxAttrs !== 'object') return <p style={{ color: 'var(--text-secondary)' }}>无属性数据</p>
             return (
-              <div className="grid gap-3" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(130px, 1fr))' }}>
+              <div className="grid gap-2" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(150px, 1fr))' }}>
                 {Object.entries(STAT_LABELS).map(([key, label]) => {
                   const val = (maxAttrs as any)[key]
                   if (val == null) return null
@@ -315,12 +322,12 @@ export default function OperatorDetailPage() {
       {/* 潜能 */}
       {potentialRanks.length > 0 && (
         <Section title={`潜能 (${potentialRanks.length})`}>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
             {potentialRanks.map((pr: any, i: number) => (
-              <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '10px 14px', background: 'var(--bg-secondary)', borderRadius: '6px' }}>
-                <span style={{ color: 'var(--accent)', fontWeight: 700, fontSize: '14px', minWidth: '48px' }}>潜 {i + 1}</span>
-                <span style={{ color: 'var(--text-primary)', fontSize: '13px' }}>{pr?.description || '无描述'}</span>
-                <span style={{ color: 'var(--text-secondary)', fontSize: '11px', marginLeft: 'auto' }}>
+              <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '6px 10px', background: 'var(--bg-secondary)', borderRadius: '4px' }}>
+                <span style={{ color: 'var(--accent)', fontWeight: 700, fontSize: '12px', minWidth: '40px' }}>潜 {i + 1}</span>
+                <span style={{ color: 'var(--text-primary)', fontSize: '12px' }}>{pr?.description || '无描述'}</span>
+                <span style={{ color: 'var(--text-secondary)', fontSize: '10px', marginLeft: 'auto' }}>
                   {pr?.type === 'BUFF' ? '增益' : String(pr?.type || '')}
                 </span>
               </div>
@@ -333,8 +340,8 @@ export default function OperatorDetailPage() {
       {phases.length > 1 && (
         <Section title="精英化条件">
           {phases.slice(1).map((p: any, i: number) => (
-            <div key={i} style={{ marginBottom: i < phases.length - 2 ? '12px' : 0 }}>
-              <h4 style={{ color: 'var(--accent-gold)', fontSize: '14px', fontWeight: 600, marginBottom: '6px' }}>
+            <div key={i} style={{ marginBottom: i < phases.length - 2 ? '8px' : 0 }}>
+              <h4 style={{ color: 'var(--accent-gold)', fontSize: '12px', fontWeight: 600, marginBottom: '4px' }}>
                 精英 {i + 1}
               </h4>
               <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px' }}>
@@ -371,8 +378,8 @@ export default function OperatorDetailPage() {
         <Section title={`技能升级 (Lv.1 → Lv.${allSkillLvlup.length + 1})`}>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
             {allSkillLvlup.map((entry: any, i: number) => (
-              <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '6px 10px', background: 'var(--bg-secondary)', borderRadius: '4px', fontSize: '13px' }}>
-                <span style={{ color: 'var(--accent)', fontWeight: 600, minWidth: '60px' }}>Lv.{i + 1}→{i + 2}</span>
+              <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '4px 8px', background: 'var(--bg-secondary)', borderRadius: '4px', fontSize: '12px' }}>
+                <span style={{ color: 'var(--accent)', fontWeight: 600, minWidth: '50px' }}>Lv.{i + 1}→{i + 2}</span>
                 <span style={{ color: 'var(--text-secondary)' }}>{materialsStr(entry?.lvlUpCost, materialMap)}</span>
               </div>
             ))}
@@ -390,10 +397,19 @@ export default function OperatorDetailPage() {
 
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (
-    <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border-color)', borderRadius: '8px', padding: '24px', marginTop: '16px' }}>
-      <div className="divider-diamond" style={{ marginBottom: '16px' }}>
-        <h3 style={{ color: 'var(--text-primary)', fontSize: '16px', fontWeight: 600 }}>{title}</h3>
-      </div>
+    <div style={{
+      background: 'rgba(35, 39, 70, 0.38)',
+      backdropFilter: 'blur(14px) saturate(1.3)',
+      WebkitBackdropFilter: 'blur(14px) saturate(1.3)',
+      border: '1px solid rgba(255,255,255,0.08)',
+      borderRadius: '8px', padding: '16px', marginTop: '12px',
+      boxShadow: '0 4px 20px rgba(0,0,0,0.12)',
+    }}>
+      <h3 style={{
+        color: 'var(--text-primary)', fontSize: '14px', fontWeight: 600,
+        marginBottom: '12px', paddingBottom: '8px',
+        borderBottom: '1px solid rgba(255,255,255,0.06)',
+      }}>{title}</h3>
       {children}
     </div>
   )
@@ -402,7 +418,7 @@ function Section({ title, children }: { title: string; children: React.ReactNode
 function Tag({ label, color }: { label: string; color: string }) {
   if (!label) return null
   return (
-    <span style={{ background: `${color}18`, color, border: `1px solid ${color}40`, borderRadius: '4px', padding: '2px 10px', fontSize: '12px' }}>
+    <span style={{ background: `${color}18`, color, border: `1px solid ${color}40`, borderRadius: '3px', padding: '1px 8px', fontSize: '11px' }}>
       {label}
     </span>
   )
@@ -410,9 +426,9 @@ function Tag({ label, color }: { label: string; color: string }) {
 
 function StatBox({ label, value, valueStr, suffix }: { label: string; value?: number; valueStr?: string; suffix?: string }) {
   return (
-    <div style={{ background: 'var(--bg-secondary)', borderRadius: '6px', padding: '12px', textAlign: 'center' }}>
-      <div style={{ color: 'var(--text-secondary)', fontSize: '11px' }}>{label}</div>
-      <div style={{ color: 'var(--text-primary)', fontSize: '20px', fontWeight: 700 }}>
+    <div style={{ background: 'var(--bg-secondary)', borderRadius: '4px', padding: '8px 10px', textAlign: 'center' }}>
+      <div style={{ color: 'var(--text-secondary)', fontSize: '10px' }}>{label}</div>
+      <div style={{ color: 'var(--text-primary)', fontSize: '16px', fontWeight: 700 }}>
         {valueStr ?? (value ?? '-')}{suffix || ''}
       </div>
     </div>
@@ -421,7 +437,7 @@ function StatBox({ label, value, valueStr, suffix }: { label: string; value?: nu
 
 function MaterialChip({ label, count }: { label: string; count: number }) {
   return (
-    <span style={{ background: 'var(--bg-secondary)', border: '1px solid var(--border-color)', borderRadius: '4px', padding: '4px 10px', fontSize: '12px', color: 'var(--text-primary)' }}>
+    <span style={{ background: 'var(--bg-secondary)', border: '1px solid var(--border-color)', borderRadius: '4px', padding: '3px 8px', fontSize: '11px', color: 'var(--text-primary)' }}>
       {label} <span style={{ color: 'var(--accent-gold)', fontWeight: 600 }}>x{count}</span>
     </span>
   )
@@ -432,20 +448,19 @@ function TalentCard({ talent, index }: { talent: any; index: number }) {
   if (candidates.length === 0) return null
 
   return (
-    <div style={{ marginBottom: '16px', paddingBottom: '16px', borderBottom: '1px solid var(--border-color)' }}>
-      <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '6px' }}>
-        <span style={{ color: 'var(--accent)', fontWeight: 600, fontSize: '14px' }}>
+    <div style={{ marginBottom: '12px', paddingBottom: '12px', borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '4px' }}>
+        <span style={{ color: 'var(--accent)', fontWeight: 600, fontSize: '13px' }}>
           {candidates[candidates.length - 1]?.name || `天赋 ${index + 1}`}
         </span>
         {candidates.length > 1 && (
-          <span style={{ color: 'var(--text-secondary)', fontSize: '11px' }}>({candidates.length} 阶段)</span>
+          <span style={{ color: 'var(--text-secondary)', fontSize: '10px' }}>({candidates.length} 阶段)</span>
         )}
       </div>
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
         {candidates.map((c: any, j: number) => {
           const phase = String(c?.unlockCondition?.phase || '').replace('PHASE_', '') || '0'
           const pot = c?.requiredPotentialRank ? ` 潜能${c.requiredPotentialRank}` : ''
-          // 去除天赋描述中的 HTML 标签 <@ba.talpu> 等
           const desc = String(c?.description || '无描述').replace(/<[^>]+>/g, '')
           const bb = ensureArray(c?.blackboard)
             .filter((b: any) => b?.valueStr || b?.value != null)
@@ -455,10 +470,10 @@ function TalentCard({ talent, index }: { talent: any; index: number }) {
             })
             .join(', ')
           return (
-            <div key={j} style={{ fontSize: '13px', padding: '6px 12px', background: 'var(--bg-secondary)', borderRadius: '4px' }}>
-              <span style={{ color: 'var(--accent-gold)', fontWeight: 500, marginRight: '8px' }}>精英{phase}{pot}</span>
+            <div key={j} style={{ fontSize: '12px', padding: '4px 10px', background: 'var(--bg-secondary)', borderRadius: '4px' }}>
+              <span style={{ color: 'var(--accent-gold)', fontWeight: 500, marginRight: '6px' }}>精英{phase}{pot}</span>
               <span style={{ color: 'var(--text-secondary)' }}>{desc}</span>
-              {bb ? <div style={{ color: '#80d0a0', fontSize: '11px', marginTop: '2px' }}>{bb}</div> : null}
+              {bb ? <div style={{ color: '#80d0a0', fontSize: '10px', marginTop: '1px' }}>{bb}</div> : null}
             </div>
           )
         })}
@@ -475,26 +490,26 @@ function SkillCard({ index, skillRef, maxLevel, isLoading, materialMap }: {
   const blackboard = ensureArray(maxLevel?.blackboard)
 
   return (
-    <div style={{ marginBottom: '16px', paddingBottom: '16px', borderBottom: '1px solid var(--border-color)' }}>
-      <div style={{ display: 'flex', alignItems: 'baseline', gap: '10px', marginBottom: '8px', flexWrap: 'wrap' }}>
-        <span style={{ color: 'var(--text-primary)', fontWeight: 700, fontSize: '16px' }}>
+    <div style={{ marginBottom: '12px', paddingBottom: '12px', borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
+      <div style={{ display: 'flex', alignItems: 'baseline', gap: '8px', marginBottom: '4px', flexWrap: 'wrap' }}>
+        <span style={{ color: 'var(--text-primary)', fontWeight: 700, fontSize: '15px' }}>
           技能 {index + 1}: {isLoading ? '加载中...' : (maxLevel?.name || skillRef?.skillId || '未知')}
         </span>
         {maxLevel?.skillType && (
-          <span style={{ color: 'var(--accent)', fontSize: '12px', padding: '2px 8px', background: 'var(--bg-secondary)', borderRadius: '4px' }}>
+          <span style={{ color: 'var(--accent)', fontSize: '11px', padding: '1px 6px', background: 'var(--bg-secondary)', borderRadius: '3px' }}>
             {SKILL_TYPE[maxLevel.skillType] || maxLevel.skillType}
           </span>
         )}
       </div>
 
       {unlockCond && (
-        <p style={{ color: 'var(--text-secondary)', fontSize: '12px', marginBottom: '4px' }}>
+        <p style={{ color: 'var(--text-secondary)', fontSize: '11px', marginBottom: '2px' }}>
           解锁: 精英 {String(unlockCond.phase || '').replace('PHASE_', '') || '0'} Lv.{unlockCond.level}
         </p>
       )}
 
       {maxLevel?.spData && (
-        <div style={{ display: 'flex', gap: '16px', fontSize: '13px', marginBottom: '6px', flexWrap: 'wrap' }}>
+        <div style={{ display: 'flex', gap: '12px', fontSize: '12px', marginBottom: '4px', flexWrap: 'wrap' }}>
           <span style={{ color: 'var(--text-secondary)' }}>
             SP类型: <span style={{ color: 'var(--text-primary)' }}>{SP_TYPE[maxLevel.spData.spType] || maxLevel.spData.spType}</span>
           </span>
@@ -513,18 +528,18 @@ function SkillCard({ index, skillRef, maxLevel, isLoading, materialMap }: {
       )}
 
       {maxLevel?.description && (
-        <p style={{ color: 'var(--text-secondary)', fontSize: '13px', lineHeight: 1.5, marginBottom: '8px' }}>
+        <p style={{ color: 'var(--text-secondary)', fontSize: '12px', lineHeight: 1.5, marginBottom: '4px' }}>
           {resolveSkillDescription(maxLevel.description, blackboard)}
         </p>
       )}
 
       {levelUpCosts.length > 0 && (
-        <details style={{ fontSize: '13px', color: 'var(--text-secondary)' }}>
-          <summary style={{ cursor: 'pointer', color: 'var(--accent)', marginBottom: '4px' }}>
+        <details style={{ fontSize: '12px', color: 'var(--text-secondary)' }}>
+          <summary style={{ cursor: 'pointer', color: 'var(--accent)', marginBottom: '2px' }}>
             专精材料 ({levelUpCosts.length} 级)
           </summary>
           {levelUpCosts.map((entry: any, j: number) => (
-            <div key={j} style={{ padding: '4px 0', fontSize: '12px' }}>
+            <div key={j} style={{ padding: '2px 0', fontSize: '11px' }}>
               <span style={{ color: 'var(--accent-gold)' }}>专精 {j + 1}</span>
               {' — '}{materialsStr(entry?.levelUpCost, materialMap)}
             </div>
@@ -546,7 +561,7 @@ function FavorTable({ frames }: { frames: any[] }) {
   if (bonus.length === 0) return <p style={{ color: 'var(--text-secondary)', fontSize: '13px' }}>该干员无信赖属性加成</p>
 
   return (
-    <div className="grid gap-3" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(120px, 1fr))' }}>
+    <div className="grid gap-2" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(130px, 1fr))' }}>
       {bonus.map((key) => (
         <StatBox key={key} label={STAT_LABELS[key] || key} value={(maxFrame.data as any)[key]} />
       ))}

@@ -1,82 +1,169 @@
 @import "tailwindcss";
 
-/* 明日方舟风格暗色主题 */
+/* ============================================================
+   Arknights Wiji — 配色完全基于 4.jpg
+   紫色在左、天蓝在右、中间亮色内容区
+   ============================================================ */
 :root {
-  --bg-primary: #0a0a0f;
-  --bg-secondary: #12121a;
-  --bg-card: #1a1a2e;
-  --border-color: #2a2a4a;
-  --text-primary: #e8e8f0;
-  --text-secondary: #9090b0;
-  --accent: #4ec9f0;
-  --accent-gold: #f0c060;
-  --danger: #e05050;
-  --success: #50c878;
+  --bg-primary: #151832;
+  --bg-secondary: #1f2348;
+  --bg-card: rgba(35, 39, 70, 0.52);
+  --border-color: rgba(255, 255, 255, 0.10);
+  --text-primary: #ffffff;
+  --text-secondary: #9a9db8;
+  --accent: #69b6de;
+  --accent-gold: #ffc3ff;
+  --purple: #6e5eb8;
+  --danger: #ff6b8a;
+  --success: #5eeadb;
 }
 
 * { margin: 0; padding: 0; box-sizing: border-box; }
+
+/* ============================================================
+   动态光晕 — 平滑横扫全页面、5s周期（紫左蓝右）
+   ============================================================ */
 body {
   font-family: 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif;
   color: var(--text-primary);
   min-height: 100vh;
-  background-color: var(--bg-primary);
-  background-image: url('/2.jpg');
-  background-position: center center;
-  background-size: contain;
+  background-color: #11142d;
+  background-image:
+    /* 紫色光球 — 左侧 */
+    radial-gradient(ellipse 480px 400px at 10% 30%, rgba(110, 94, 184, 0.40) 0%, transparent 100%),
+    /* 天蓝光球 — 右上方 */
+    radial-gradient(ellipse 440px 360px at 80% 25%, rgba(106, 176, 218, 0.38) 0%, transparent 100%),
+    /* 粉色光球 — 中下方 */
+    radial-gradient(ellipse 360px 300px at 50% 70%, rgba(255, 195, 255, 0.22) 0%, transparent 100%),
+    /* 第二蓝光 — 右下角 */
+    radial-gradient(ellipse 320px 280px at 90% 75%, rgba(106, 176, 218, 0.18) 0%, transparent 100%);
+  background-size: 300% 200%;
   background-repeat: no-repeat;
   background-attachment: fixed;
+  /* 缓慢对角斜移 */
+  animation: aurora-drift 13s ease-in-out infinite alternate;
+  overflow-x: hidden;
 }
+
+@keyframes aurora-drift {
+  from { background-position: 25% 25%; }
+  to   { background-position: 75% 75%; }
+}
+
+/* 第二层光晕 — 反向对角斜移，6s */
+#root::before {
+  content: '';
+  position: fixed; top: -20%; left: -20%;
+  width: 140%; height: 140%;
+  z-index: 0; pointer-events: none;
+  background:
+    radial-gradient(ellipse 380px 320px at 25% 70%, rgba(110, 94, 184, 0.24) 0%, transparent 100%),
+    radial-gradient(ellipse 340px 300px at 75% 25%, rgba(106, 176, 218, 0.22) 0%, transparent 100%);
+  animation: aurora-drift-reverse 19s ease-in-out infinite alternate;
+}
+
+@keyframes aurora-drift-reverse {
+  from { background-position: 75% 25%; }
+  to   { background-position: 25% 75%; }
+}
+
+/* ============================================================
+   导航栏 — 无背景无模糊，彻底融入页面
+   ============================================================ */
+.glass-nav {
+  /* 完全透明，靠导航文字本身可见，无任何分割边界 */
+}
+
+/* ============================================================
+   自动毛玻璃 — 对所有 --bg-card 元素应用
+   ============================================================ */
+#root [style*="--bg-card"] {
+  backdrop-filter: blur(14px) saturate(1.3);
+  -webkit-backdrop-filter: blur(14px) saturate(1.3);
+}
+
+/* ============================================================
+   玻璃工具类
+   ============================================================ */
+.glass-panel {
+  background: rgba(35, 39, 70, 0.42);
+  backdrop-filter: blur(14px) saturate(1.3);
+  -webkit-backdrop-filter: blur(14px) saturate(1.3);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 10px;
+}
+
+.glass-btn {
+  background: rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  border: 1px solid rgba(255, 255, 255, 0.10);
+  border-radius: 7px;
+  color: var(--text-primary);
+  cursor: pointer;
+  font-size: 13px;
+  padding: 6px 14px;
+  transition: background 0.2s, border-color 0.2s, transform 0.15s, box-shadow 0.2s;
+}
+.glass-btn:hover {
+  background: rgba(255, 255, 255, 0.16);
+  border-color: var(--accent);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 14px rgba(106, 176, 218, 0.16);
+}
+.glass-btn:active { transform: translateY(0); }
+.glass-btn.active {
+  background: var(--accent);
+  color: #11142d;
+  border-color: var(--accent);
+}
+
+/* ========== 滚动条 ========== */
 ::-webkit-scrollbar { width: 6px; }
-::-webkit-scrollbar-track { background: var(--bg-secondary); }
-::-webkit-scrollbar-thumb { background: var(--border-color); border-radius: 3px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.12); border-radius: 3px; }
 
-/* 页面淡入动画 */
-@keyframes page-fade-in {
-  from { opacity: 0; transform: translateY(12px); }
-  to { opacity: 1; transform: translateY(0); }
-}
-
-/* 骨架屏脉冲动画 */
-@keyframes skeleton-pulse {
-  0%, 100% { opacity: 0.3; }
-  50% { opacity: 0.7; }
-}
-
-/* 卡片悬停上浮 */
+/* ========== 卡片 hover 动画（干员/敌人图鉴列表） ========== */
 .card-hover {
-  transition: border-color 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
+  transition: transform 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94),
+              background 0.3s ease,
+              border-color 0.3s ease,
+              box-shadow 0.3s ease;
+  cursor: pointer;
 }
 .card-hover:hover {
+  transform: translateY(-6px) translateX(4px);
+  background: rgba(35, 39, 70, 0.55) !important;
   border-color: var(--accent) !important;
-  transform: translateY(-3px);
-  box-shadow: 0 4px 20px rgba(78, 201, 240, 0.12);
+  box-shadow: 0 12px 36px rgba(0, 0, 0, 0.3), 0 0 24px rgba(106, 176, 218, 0.13);
 }
 
-/* 按钮过渡 */
-button {
-  transition: background 0.2s ease, transform 0.15s ease, box-shadow 0.2s ease;
+/* ========== 动画 ========== */
+@keyframes page-fade-in {
+  from { opacity: 0; transform: translateY(12px); }
+  to   { opacity: 1; transform: translateY(0); }
 }
-button:hover {
-  transform: translateY(-1px);
-}
-button:active {
-  transform: translateY(0);
+@keyframes skeleton-pulse {
+  0%, 100% { opacity: 0.3; }
+  50%      { opacity: 0.7; }
 }
 
-/* 输入框焦点光晕 */
+/* ========== 输入框/选择框玻璃效果 ========== */
 input:focus, select:focus {
   border-color: var(--accent) !important;
-  box-shadow: 0 0 0 3px rgba(78, 201, 240, 0.25);
+  box-shadow: 0 0 0 3px rgba(106, 176, 218, 0.18);
   outline: none;
 }
 button:focus-visible {
-  box-shadow: 0 0 0 3px rgba(78, 201, 240, 0.35);
+  box-shadow: 0 0 0 3px rgba(106, 176, 218, 0.3);
 }
 
-/* 链接 hover 过渡 */
+/* ========== 全局按钮过渡 ========== */
+button {
+  transition: background 0.2s ease, transform 0.15s ease, box-shadow 0.2s ease;
+}
+button:hover  { transform: translateY(-1px); }
+button:active { transform: translateY(0); }
+
 a { transition: color 0.15s ease; }
-
-/* 导航高亮指示器动画 */
-nav a {
-  transition: color 0.2s ease, border-color 0.2s ease;
-}
+nav a { transition: color 0.2s ease, border-color 0.2s ease; }

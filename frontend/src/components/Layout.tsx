@@ -1,8 +1,8 @@
 import { Link, Outlet, useLocation } from 'react-router-dom'
 import SearchDropdown from './SearchDropdown'
 
-// 明日方舟风格导航栏
-// 导航在左（居中对齐内容区），Logo+搜索固定在页面右上角
+// Glassmorphism 毛玻璃风格布局
+// 动态光晕背景透过半透明层可见，卡片/导航栏有 backdrop-blur 效果
 export default function Layout() {
   const location = useLocation()
   const navItems = [
@@ -13,28 +13,14 @@ export default function Layout() {
   ]
 
   return (
-    <div className="min-h-screen flex flex-col" style={{ background: 'rgba(10, 10, 15, 0.72)' }}>
-      {/* 顶部导航：全宽 */}
-      <header style={{
-        background: 'var(--bg-secondary)',
-        borderBottom: '1px solid var(--border-color)',
-        position: 'sticky', top: 0, zIndex: 50,
-      }}>
-        {/* 吉祥物：固定在左上角 */}
-        <Link to="/" style={{
-          position: 'absolute', top: '6px', left: '16px', zIndex: 51,
-          display: 'flex', alignItems: 'center', gap: '8px',
-          textDecoration: 'none',
-        }}>
-          <img src="/3.png" alt="ArkWiji" style={{ height: '64px', width: '64px', borderRadius: '50%', objectFit: 'cover' }} />
-        </Link>
-
+    <div className="min-h-screen flex flex-col" style={{ background: 'transparent' }}>
+      {/* 毛玻璃导航栏 */}
+      <header className="glass-nav" style={{ position: 'sticky', top: 0, zIndex: 50 }}>
         <div style={{
           display: 'flex', alignItems: 'center',
-          maxWidth: '1024px', margin: '0 auto',
-          padding: '8px 16px 8px 52px', position: 'relative',
+          padding: '8px 16px', position: 'relative',
         }}>
-          {/* 左侧：导航链接 */}
+          {/* 导航链接 */}
           <nav className="flex gap-1">
             {navItems.map(item => {
               const isActive = location.pathname === item.path ||
@@ -48,6 +34,7 @@ export default function Layout() {
                     color: isActive ? 'var(--accent)' : 'var(--text-secondary)',
                     borderBottom: isActive ? '2px solid var(--accent)' : '2px solid transparent',
                     transition: 'color 0.2s, border-color 0.2s',
+                    borderRadius: '6px 6px 0 0',
                   }}
                 >
                   <span className="mr-1">{item.icon}</span>
@@ -58,12 +45,13 @@ export default function Layout() {
           </nav>
         </div>
 
-        {/* Logo + 搜索：固定在页面右上角（不受居中限制） */}
+        {/* 搜索 + Logo：固定在页面右上角，同一行 */}
         <div style={{
           position: 'absolute', top: '8px', right: '24px',
-          display: 'flex', flexDirection: 'column', alignItems: 'flex-end',
-          gap: '6px', zIndex: 51,
+          display: 'flex', flexDirection: 'row', alignItems: 'center',
+          gap: '12px', zIndex: 51,
         }}>
+          <SearchDropdown />
           <Link to="/" className="flex items-center gap-2 no-underline">
             <span style={{ color: 'var(--accent)', fontSize: '18px', fontWeight: 700 }}>
               ◈ ArkWiji
@@ -72,7 +60,6 @@ export default function Layout() {
               Wiki
             </span>
           </Link>
-          <SearchDropdown />
         </div>
       </header>
 
@@ -89,10 +76,8 @@ export default function Layout() {
         <Outlet />
       </main>
 
-      {/* 底部：全宽 + 文字居中 */}
+      {/* 底部 */}
       <footer style={{
-        background: 'var(--bg-secondary)',
-        borderTop: '1px solid var(--border-color)',
         padding: '16px', marginTop: '40px',
         textAlign: 'center',
         color: 'var(--text-secondary)',

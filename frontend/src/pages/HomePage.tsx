@@ -3,7 +3,6 @@ import { useQueries } from '@tanstack/react-query'
 import { fetchOperators, fetchEnemies, fetchStages } from '../api/client'
 
 export default function HomePage() {
-  // 并行获取三个模块的数据总量（只取第1页1条，用 total 即可）
   const [opQuery, enQuery, stQuery] = useQueries({
     queries: [
       { queryKey: ['operators-total'], queryFn: () => fetchOperators({ page: 1, page_size: 1 }) },
@@ -17,84 +16,101 @@ export default function HomePage() {
   const stTotal = stQuery.data?.total ?? null
 
   return (
-    <div style={{ textAlign: 'center' }}>
-      {/* 欢迎区域 */}
-      <div style={{ padding: '60px 0 48px' }}>
+    <div style={{
+      display: 'flex', alignItems: 'center', justifyContent: 'center',
+      gap: '56px', flexWrap: 'wrap', padding: '60px 0',
+      minHeight: '60vh',
+    }}>
+      {/* 左侧：欢迎文字 */}
+      <div style={{ textAlign: 'left' }}>
         <h1 style={{
-          fontSize: '40px', fontWeight: 700, color: 'var(--text-primary)',
-          marginBottom: '12px',
+          fontSize: '44px', fontWeight: 700, color: 'var(--text-primary)',
+          marginBottom: '10px', lineHeight: 1.2,
         }}>
-          欢迎使用 <span style={{ color: 'var(--accent)' }}>ArkWiji</span>
+          欢迎使用<br /><span style={{ color: 'var(--accent)' }}>ArkWiji</span>
         </h1>
         <p style={{ color: 'var(--text-secondary)', fontSize: '16px' }}>
           明日方舟数据查询 · 干员 / 关卡 / 敌人
         </p>
       </div>
 
-      {/* 功能入口卡片 */}
-      <div style={{
-        display: 'flex', justifyContent: 'center', gap: '20px',
-        flexWrap: 'wrap', maxWidth: '720px', margin: '0 auto',
-      }}>
+      {/* 右侧：功能卡片（竖排） */}
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
         <FeatureCard
-          to="/operators"
-          icon="◆"
-          title="干员图鉴"
-          desc="查询全部干员属性、技能、晋升材料"
-          count={opTotal}
-          countLabel="名干员"
+          to="/operators" icon="◆" accent="var(--accent)"
+          title="干员图鉴" desc="属性、技能、晋升材料查询"
+          count={opTotal} countLabel="名干员"
         />
         <FeatureCard
-          to="/stages"
-          icon="◈"
-          title="关卡日程"
-          desc="资源收集副本每日轮换查询"
-          count={stTotal}
-          countLabel="个关卡"
+          to="/stages" icon="◈" accent="var(--accent-gold)"
+          title="关卡日程" desc="资源收集每日轮换"
+          count={stTotal} countLabel="个关卡"
         />
         <FeatureCard
-          to="/enemies"
-          icon="⬖"
-          title="敌人图鉴"
-          desc="小怪、精英怪、Boss 数据查询"
-          count={enTotal}
-          countLabel="个敌人"
+          to="/enemies" icon="⬖" accent="#ff6b8a"
+          title="敌人图鉴" desc="小怪、精英、Boss 数据一览"
+          count={enTotal} countLabel="个敌人"
         />
       </div>
     </div>
   )
 }
 
-// 功能入口卡片 - 带数据统计
-function FeatureCard({ to, icon, title, desc, count, countLabel }: {
-  to: string; icon: string; title: string; desc: string
+// 半透明功能卡片 — hover 时发光上浮
+const cardStyle: React.CSSProperties = {
+  display: 'flex', alignItems: 'center', gap: '16px',
+  width: '280px', padding: '18px 22px',
+  background: 'rgba(35, 39, 70, 0.28)',
+  backdropFilter: 'blur(10px) saturate(1.2)',
+  WebkitBackdropFilter: 'blur(10px) saturate(1.2)',
+  border: '1px solid rgba(255,255,255,0.06)',
+  borderRadius: '14px',
+  cursor: 'pointer',
+  transition: 'all 0.35s cubic-bezier(0.25, 0.46, 0.45, 0.94)',
+}
+
+function FeatureCard({ to, icon, accent, title, desc, count, countLabel }: {
+  to: string; icon: string; accent: string; title: string; desc: string
   count: number | null; countLabel: string
 }) {
   return (
     <Link
       to={to}
-      className="no-underline card-hover"
-      style={{
-        width: '200px', padding: '28px 20px 20px',
-        background: 'var(--bg-card)', border: '1px solid var(--border-color)',
-        borderRadius: '10px', display: 'flex', flexDirection: 'column',
-        alignItems: 'center', textAlign: 'center',
+      className="no-underline"
+      style={cardStyle}
+      onMouseEnter={e => {
+        const el = e.currentTarget
+        el.style.transform = 'translateY(-6px) translateX(4px)'
+        el.style.background = 'rgba(35, 39, 70, 0.55)'
+        el.style.borderColor = accent
+        el.style.boxShadow = `0 12px 36px rgba(0,0,0,0.3), 0 0 24px ${accent}22`
+      }}
+      onMouseLeave={e => {
+        const el = e.currentTarget
+        el.style.transform = 'translateY(0) translateX(0)'
+        el.style.background = 'rgba(35, 39, 70, 0.28)'
+        el.style.borderColor = 'rgba(255,255,255,0.06)'
+        el.style.boxShadow = 'none'
       }}
     >
-      <span style={{ fontSize: '36px', color: 'var(--accent)', marginBottom: '14px' }}>{icon}</span>
-      <h3 style={{ color: 'var(--text-primary)', fontSize: '18px', fontWeight: 600, marginBottom: '6px' }}>
-        {title}
-      </h3>
-      <p style={{ color: 'var(--text-secondary)', fontSize: '13px', lineHeight: 1.5, marginBottom: '16px', flex: 1 }}>
-        {desc}
-      </p>
       <span style={{
-        color: 'var(--accent)', fontSize: '13px', fontWeight: 500,
-        background: 'rgba(78, 201, 240, 0.1)',
-        padding: '4px 14px', borderRadius: '12px',
-      }}>
-        {count !== null ? `共 ${count} ${countLabel}` : '载入中…'}
-      </span>
+        fontSize: '34px', flexShrink: 0,
+        filter: 'drop-shadow(0 0 8px rgba(255,255,255,0.15))',
+      }}>{icon}</span>
+      <div style={{ flex: 1, minWidth: 0 }}>
+        <h3 style={{ color: 'var(--text-primary)', fontSize: '16px', fontWeight: 600, margin: 0 }}>
+          {title}
+        </h3>
+        <p style={{ color: 'var(--text-secondary)', fontSize: '12px', margin: '3px 0 8px', lineHeight: 1.3 }}>
+          {desc}
+        </p>
+        <span style={{
+          color: accent, fontSize: '12px', fontWeight: 500,
+          background: `${accent}18`, padding: '3px 10px', borderRadius: '10px',
+        }}>
+          {count !== null ? `共 ${count} ${countLabel}` : '载入中…'}
+        </span>
+      </div>
     </Link>
   )
 }

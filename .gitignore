@@ -26,6 +26,9 @@ data/extracted/
 # 本地素材（不受 git 管理）
 jpgs/
 
+# Logs
+*.log
+
 # OS
 .DS_Store
 Thumbs.db

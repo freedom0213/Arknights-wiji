@@ -160,9 +160,103 @@ export function searchAll(q: string, limit = 5) {
 }
 
 // ========== 材料 ==========
+export interface Material {
+  id: string; itemId: string; name: string; description: string
+  rarity: string; iconId: string; iconUrl: string | null
+  usage: string; obtainApproach: string
+  classifyType: string; itemType: string
+  stageDropList?: string; buildingProductList?: string
+}
+
+export interface MaterialListResponse {
+  total: number; page: number; page_size: number; items: Material[]
+}
+
+export function fetchMaterials(params: Record<string, string | number>) {
+  const qs = new URLSearchParams()
+  Object.entries(params).forEach(([k, v]) => { if (v !== undefined && v !== '') qs.set(k, String(v)) })
+  return request<MaterialListResponse>(`/materials?${qs}`)
+}
+
+export function fetchAllMaterials(classifyType?: string) {
+  const qs = classifyType ? `?classify_type=${encodeURIComponent(classifyType)}` : ''
+  return request<Material[]>(`/materials/all${qs}`)
+}
+
+export function fetchMaterial(id: string) {
+  return request<Material>(`/materials/${encodeURIComponent(id)}`)
+}
+
 export function fetchItemsBatch(ids: string[]) {
   if (ids.length === 0) return Promise.resolve({})
   return request<Record<string, { id: string; name: string; iconId: string }>>(
     `/materials/batch?ids=${ids.join(',')}`
   )
+}
+
+// ========== 皮肤（时装回廊）==========
+export interface Skin {
+  id: string; skinId: string; charId: string
+  skinName: string | null; skinGroupId: string; skinGroupName: string | null
+  skinGroupSortIndex: number | null; content: string | null
+  dialog: string | null; usage: string | null; description: string | null
+  drawerList: string[]; designerList: string[]; colorList: string[]
+  titleList: string[]; displayTagId: string | null
+  obtainApproach: string | null; sortId: number | null
+  getTime: number; onYear: number; onPeriod: number
+  modelName: string | null; isBuySkin: number | null
+  buildingId: string | null; voiceType: string | null
+  battleSkin: string | null
+  // 图片 CDN URL
+  portraitUrl: string | null; avatarUrl: string | null
+  illustUrl: string | null; illustUrlAceship: string | null
+  spIllustUrl: string | null; spPortraitUrl: string | null
+  dynIllustUrl: string | null; dynEntranceUrl: string | null
+}
+
+export interface SkinListResponse {
+  total: number; page: number; page_size: number; items: Skin[]
+}
+
+export function fetchSkins(params: Record<string, string | number>) {
+  const qs = new URLSearchParams()
+  Object.entries(params).forEach(([k, v]) => { if (v !== undefined && v !== '') qs.set(k, String(v)) })
+  return request<SkinListResponse>(`/skins?${qs}`)
+}
+
+export function fetchSkin(id: string) {
+  return request<Skin>(`/skins/${encodeURIComponent(id)}`)
+}
+
+// 皮肤按日期分组
+export interface SkinGroup { date: string; skins: Skin[] }
+export interface SkinGroupedResponse {
+  total_skins: number; total_groups: number; groups: SkinGroup[]
+}
+export function fetchSkinsGrouped() {
+  return request<SkinGroupedResponse>('/skins/grouped')
+}
+
+// ========== 活动 ==========
+export interface Activity {
+  id: string; name: string
+  type_: string; displayType: string
+  startTime: number; endTime: number; rewardEndTime: number
+  displayOnHome: number; hasStage: number; isReplicate: number
+  templateShopId: string | null; medalGroupId: string | null
+  picGroup: string | null; posterUrls: string[]
+}
+
+export interface ActivityListResponse {
+  total: number; page: number; page_size: number; items: Activity[]
+}
+
+export function fetchActivities(params: Record<string, string | number>) {
+  const qs = new URLSearchParams()
+  Object.entries(params).forEach(([k, v]) => { if (v !== undefined && v !== '') qs.set(k, String(v)) })
+  return request<ActivityListResponse>(`/activities?${qs}`)
+}
+
+export function fetchActivity(id: string) {
+  return request<Activity>(`/activities/${encodeURIComponent(id)}`)
 }

@@ -8,6 +8,9 @@ export default function Layout() {
   const navItems = [
     { path: '/', label: '首页', icon: '◇' },
     { path: '/operators', label: '干员', icon: '◆' },
+    { path: '/materials', label: '材料', icon: '◫' },
+    { path: '/skins', label: '时装', icon: '⬒' },
+    { path: '/activities', label: '活动', icon: '✦' },
     { path: '/stages', label: '关卡', icon: '◈' },
     { path: '/enemies', label: '敌人', icon: '⬖' },
   ]

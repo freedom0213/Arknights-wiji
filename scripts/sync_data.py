@@ -48,6 +48,10 @@ FILE_DEFS = [
     ("zh_CN/gamedata/excel/building_data.json", "building_config", None, "config"),
     # 皮肤数据: {skinKey: {charId, avatarId, portraitId, illustId, ...}}
     ("zh_CN/gamedata/excel/skin_table.json", "char_skins", "charSkins", "sub"),
+    # 活动基本信息: {actId: {name, type, startTime, endTime, picGroup, ...}}
+    ("zh_CN/gamedata/excel/activity_table.json", "activities", "basicInfo", "sub"),
+    # 活动主题配置: [{id, type, funcId, startTs, endTs, picGroups, ...}]
+    ("zh_CN/gamedata/excel/activity_table.json", "act_themes", "actThemes", "list"),
 ]
 
 
@@ -121,13 +125,15 @@ def infer_schema(records: dict) -> dict[str, str]:
 
 def create_and_insert(conn, table_name: str, records: dict, schema: dict) -> int:
     """建表 + 批量插入 {id: {fields}} 数据"""
-    cols = ["id TEXT PRIMARY KEY"] + [f'"{clean_col(f)}" {t}' for f, t in schema.items()]
+    # 如果数据 schema 中已有 id 字段，PK 改名避免重复列
+    pk_name = "row_id" if "id" in {k.lower() for k in schema} else "id"
+    cols = [f"{pk_name} TEXT PRIMARY KEY"] + [f'"{clean_col(f)}" {t}' for f, t in schema.items()]
     ddl = f"CREATE TABLE IF NOT EXISTS {table_name} (\n  " + ",\n  ".join(cols) + "\n)"
     conn.execute(f"DROP TABLE IF EXISTS {table_name}")
     conn.execute(ddl)
 
     placeholders = ["?" for _ in range(len(schema) + 1)]
-    col_names = ["id"] + [clean_col(f) for f in schema]
+    col_names = [pk_name] + [clean_col(f) for f in schema]
     sql = f"INSERT OR REPLACE INTO {table_name} ({', '.join(col_names)}) VALUES ({', '.join(placeholders)})"
 
     rows = []

@@ -59,10 +59,12 @@ async def health_check():
 
 
 # 注册路由
-from routers import operators, enemies, stages, materials, skills, search
+from routers import operators, enemies, stages, materials, skills, search, skins, activities
 app.include_router(operators.router, prefix="/api", tags=["干员"])
 app.include_router(enemies.router, prefix="/api", tags=["敌人"])
 app.include_router(stages.router, prefix="/api", tags=["关卡"])
 app.include_router(materials.router, prefix="/api", tags=["材料"])
 app.include_router(skills.router, prefix="/api", tags=["技能"])
 app.include_router(search.router, prefix="/api", tags=["搜索"])
+app.include_router(skins.router, prefix="/api", tags=["时装"])
+app.include_router(activities.router, prefix="/api", tags=["活动"])

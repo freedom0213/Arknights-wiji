@@ -1,9 +1,28 @@
 """材料 API 路由"""
 from fastapi import APIRouter, HTTPException, Query
 
-from services.material_service import get_item_by_id, get_items_batch, search_items
+from services.material_service import get_all_items, get_item_by_id, get_items_batch, list_items, search_items
 
 router = APIRouter()
+
+
+@router.get("/materials")
+async def api_list_materials(
+    page: int = Query(1, ge=1, description="页码"),
+    page_size: int = Query(200, ge=1, le=2000, description="每页数量"),
+    item_type: str | None = Query(None, description="物品类型筛选"),
+    classify_type: str | None = Query(None, description="分类筛选"),
+):
+    """分页查询材料/物品列表，支持类型筛选"""
+    return list_items(page=page, page_size=page_size, item_type=item_type, classify_type=classify_type)
+
+
+@router.get("/materials/all")
+async def api_get_all_materials(
+    classify_type: str | None = Query(None, description="分类筛选"),
+):
+    """全量返回材料列表（不分页），供图片网格展示"""
+    return get_all_items(classify_type=classify_type)
 
 
 @router.get("/materials/search")

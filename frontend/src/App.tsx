@@ -6,6 +6,12 @@ import OperatorDetailPage from './pages/OperatorDetailPage'
 import StagesPage from './pages/StagesPage'
 import EnemiesPage from './pages/EnemiesPage'
 import EnemyDetailPage from './pages/EnemyDetailPage'
+import MaterialsPage from './pages/MaterialsPage'
+import MaterialDetailPage from './pages/MaterialDetailPage'
+import SkinGalleryPage from './pages/SkinGalleryPage'
+import SkinDetailPage from './pages/SkinDetailPage'
+import ActivitiesPage from './pages/ActivitiesPage'
+import ActivityDetailPage from './pages/ActivityDetailPage'
 
 export default function App() {
   return (
@@ -17,6 +23,12 @@ export default function App() {
         <Route path="/stages" element={<StagesPage />} />
         <Route path="/enemies" element={<EnemiesPage />} />
         <Route path="/enemies/:id" element={<EnemyDetailPage />} />
+        <Route path="/materials" element={<MaterialsPage />} />
+        <Route path="/materials/:id" element={<MaterialDetailPage />} />
+        <Route path="/skins" element={<SkinGalleryPage />} />
+        <Route path="/skins/:id" element={<SkinDetailPage />} />
+        <Route path="/activities" element={<ActivitiesPage />} />
+        <Route path="/activities/:id" element={<ActivityDetailPage />} />
       </Route>
     </Routes>
   )
